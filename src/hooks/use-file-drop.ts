@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { logInfo } from "@/lib/analytics/otel";
 import { trackEvent } from "@/lib/analytics/track";
+import { useLatest } from "./use-latest";
 
 export function useFileDrop(onFile: (file: File) => void) {
   const [isDragging, setIsDragging] = useState(false);
   const depthRef = useRef(0);
   const draggingRef = useRef(false);
-  const handlerRef = useRef(onFile);
-  handlerRef.current = onFile;
+  const handlerRef = useLatest(onFile);
 
   useEffect(() => {
     const onDragEnter = (e: DragEvent) => {

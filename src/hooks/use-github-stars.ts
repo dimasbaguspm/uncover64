@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { logDebug, logWarn } from "@/lib/analytics/otel";
+import { useAsyncEffect } from "./use-async-effect";
 
 const CACHE_KEY = "uncover64:github-stars";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -55,14 +56,10 @@ function fetchStars(): Promise<number | null> {
 export function useGithubStars(): number | null {
   const [stars, setStars] = useState<number | null>(() => loadCache());
 
-  useEffect(() => {
-    let active = true;
-    void fetchStars().then((n) => {
-      if (active) setStars(n);
-    });
-    return () => {
-      active = false;
-    };
+  useAsyncEffect(async (isActive) => {
+    if (loadCache() !== null) return;
+    const n = await fetchStars();
+    if (isActive()) setStars(n);
   }, []);
 
   return stars;
