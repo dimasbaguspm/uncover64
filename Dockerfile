@@ -29,6 +29,12 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    # Explicit static files at the docroot (favicon) — never SPA-fallback
+    location = /uncover64.svg {
+        add_header Cache-Control "public, max-age=86400";
+        try_files $uri =404;
+    }
+
     # SPA fallback — any non-asset path serves index.html
     location / {
         try_files $uri $uri/ /index.html;

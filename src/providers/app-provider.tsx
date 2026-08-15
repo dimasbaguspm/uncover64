@@ -3,6 +3,7 @@ import { initUmami } from "../lib/analytics/umami";
 import { trackEvent } from "../lib/analytics/track";
 import { ANALYTICS } from "../constants/analytics";
 import { initWorker } from "../lib/worker-client";
+import { tryCatch } from "../lib/utils/try-catch";
 
 const INIT_TIMEOUT_MS = 5000;
 
@@ -16,24 +17,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      try {
+    void tryCatch(
+      async () => {
         initUmami();
         if (ANALYTICS.otelUrl) {
-          await import("../lib/analytics/faro").then(({ initFaro }) => initFaro()).catch(() => {});
+          await tryCatch(() => import("../lib/analytics/faro").then(({ initFaro }) => initFaro()));
         }
         await Promise.race([
           initWorker(),
           new Promise((resolve) => setTimeout(resolve, INIT_TIMEOUT_MS)),
         ]);
-      } catch {
-        /* boot must never block the app */
-      }
-      if (mounted) {
-        trackEvent("page_loaded");
-        setReady(true);
-      }
-    })();
+      },
+      {
+        onFinished: () => {
+          if (mounted) {
+            trackEvent("page_loaded");
+            setReady(true);
+          }
+        },
+      },
+    );
     return () => {
       mounted = false;
     };

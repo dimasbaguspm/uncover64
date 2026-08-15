@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { sendOtlpLog } from "../lib/analytics/otel";
+import { logError } from "../lib/analytics/otel";
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null };
@@ -9,9 +9,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    void sendOtlpLog("error", "error", {
-      message: error.message,
-      stack: error.stack ?? "",
+    void logError(error, "React render error", {
       componentStack: info.componentStack ?? "",
     });
   }

@@ -31,22 +31,15 @@ function context(props?: Record<string, unknown>): Record<string, unknown> {
   };
 }
 
-/**
- * Send a log as OTLP JSON to `${otelUrl}/v1/logs` — the same endpoint/payload
- * shape the collector accepts (verified with curl).
- */
-export async function sendOtlpLog(
-  name: string,
-  level: keyof typeof SEVERITY = "info",
-  props?: Record<string, unknown>,
+async function postOtlpLog(
+  level: string,
+  body: string,
+  attrs: Record<string, unknown>,
 ): Promise<void> {
   const base = ANALYTICS.otelUrl;
   if (!base) return;
-  const attributes = Object.entries(context(props)).map(([k, v]) => ({
-    key: k,
-    value: valueOf(v),
-  }));
-  const body = {
+  const attributes = Object.entries(attrs).map(([k, v]) => ({ key: k, value: valueOf(v) }));
+  const payload = {
     resourceLogs: [
       {
         resource: {
@@ -63,10 +56,10 @@ export async function sendOtlpLog(
             scope: { name: "uncover64" },
             logRecords: [
               {
-                severityNumber: SEVERITY[level],
+                severityNumber: SEVERITY[level] ?? 9,
                 severityText: level.toUpperCase(),
                 timeUnixNano: String(Date.now() * 1e6),
-                body: { stringValue: name },
+                body: { stringValue: body },
                 attributes,
               },
             ],
@@ -79,9 +72,26 @@ export async function sendOtlpLog(
     await fetch(`${base}/v1/logs`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(payload),
     });
   } catch {
     /* telemetry is best-effort */
   }
+}
+
+/**
+ * Log an error to OTEL. The error is captured as attributes
+ * (name, message, stack) alongside the custom message and rich context.
+ */
+export async function logError(
+  err: unknown,
+  message: string,
+  attrs?: Record<string, unknown>,
+): Promise<void> {
+  const e = err instanceof Error ? err : new Error(String(err));
+  await postOtlpLog(
+    "error",
+    message,
+    context({ errorName: e.name, errorMessage: e.message, stack: e.stack ?? "", ...attrs }),
+  );
 }

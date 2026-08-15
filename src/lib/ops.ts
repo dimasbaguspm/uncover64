@@ -21,6 +21,7 @@ import {
   utf8Encode,
 } from "./base64";
 import { detect } from "./base64";
+import { tryCatch } from "./utils/try-catch";
 
 export class CompressionUnavailableError extends Error {}
 
@@ -148,41 +149,43 @@ export async function opEncodeAll(bytes: Uint8Array): Promise<EncodeAllResult> {
   const base64 = bytesToBase64(bytes);
   const results = await Promise.all(
     ALL_ALGOS.flatMap((algorithm) =>
-      COMPRESSION_QUALITIES.map(async (quality): Promise<Variation | null> => {
-        try {
-          const t0 = performance.now();
-          const compressed = await compressBytes(bytes, algorithm, quality);
-          const encoded = bytesToBase64(compressed);
-          return {
-            algorithm,
-            quality,
-            byteLength: compressed.byteLength,
-            base64Length: encoded.length,
-            base64: encoded,
-            ms: performance.now() - t0,
-          };
-        } catch {
-          return null;
-        }
-      }),
+      COMPRESSION_QUALITIES.map((quality) =>
+        tryCatch<Variation>(
+          async () => {
+            const t0 = performance.now();
+            const compressed = await compressBytes(bytes, algorithm, quality);
+            const encoded = bytesToBase64(compressed);
+            return {
+              algorithm,
+              quality,
+              byteLength: compressed.byteLength,
+              base64Length: encoded.length,
+              base64: encoded,
+              ms: performance.now() - t0,
+            };
+          },
+          { log: false },
+        ),
+      ),
     ),
   );
   const variations = results.filter((v): v is Variation => v !== null);
-  try {
-    const t0 = performance.now();
-    const lz = await compressBytes(bytes, "lz");
-    const lzEncoded = bytesToBase64(lz);
-    variations.push({
-      algorithm: "lz",
-      quality: QUALITY_ORIGINAL,
-      byteLength: lz.byteLength,
-      base64Length: lzEncoded.length,
-      base64: lzEncoded,
-      ms: performance.now() - t0,
-    });
-  } catch {
-    /* lz-string unavailable — skip */
-  }
+  await tryCatch(
+    async () => {
+      const t0 = performance.now();
+      const lz = await compressBytes(bytes, "lz");
+      const lzEncoded = bytesToBase64(lz);
+      variations.push({
+        algorithm: "lz",
+        quality: QUALITY_ORIGINAL,
+        byteLength: lz.byteLength,
+        base64Length: lzEncoded.length,
+        base64: lzEncoded,
+        ms: performance.now() - t0,
+      });
+    },
+    { log: false },
+  );
   return {
     base64,
     mime: info.mime,
@@ -215,14 +218,15 @@ function parseJwt(input: string): JwtParts | null {
 
 async function imageDims(bytes: Uint8Array): Promise<{ width: number; height: number } | null> {
   if (!("createImageBitmap" in globalThis)) return null;
-  try {
-    const bmp = await createImageBitmap(new Blob([bytes as Uint8Array<ArrayBuffer>]));
-    const { width, height } = bmp;
-    bmp.close();
-    return { width, height };
-  } catch {
-    return null;
-  }
+  return tryCatch(
+    async () => {
+      const bmp = await createImageBitmap(new Blob([bytes as Uint8Array<ArrayBuffer>]));
+      const { width, height } = bmp;
+      bmp.close();
+      return { width, height };
+    },
+    { log: false },
+  );
 }
 
 export async function opDecode(

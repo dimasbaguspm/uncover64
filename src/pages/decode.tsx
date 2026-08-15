@@ -7,6 +7,7 @@ import { useWorker } from "../providers/worker-provider";
 import { SplitPane } from "../components/split-pane";
 import { PreviewPanel } from "../components/preview-panel";
 import { ErrorBanner, Shimmer } from "../components/ui";
+import { tryCatch } from "../lib/utils/try-catch";
 
 function optionLabel(id: DecompressOption, t: (key: string) => string): string {
   if (id === null) return t("decode.off");
@@ -47,12 +48,13 @@ export default function DecodePage() {
   }, [input, decompress]);
 
   const paste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text) setInput(text);
-    } catch {
-      /* clipboard unavailable */
-    }
+    await tryCatch(
+      async () => {
+        const text = await navigator.clipboard.readText();
+        if (text) setInput(text);
+      },
+      { log: false },
+    );
   };
 
   const onPaste = async (e: ClipboardEvent) => {

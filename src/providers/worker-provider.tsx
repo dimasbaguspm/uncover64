@@ -8,8 +8,8 @@ import type {
 } from "../lib/types";
 import * as worker from "../lib/worker-client";
 import { trackEvent } from "../lib/analytics/track";
-import { sendOtlpLog } from "../lib/analytics/otel";
 import { toErrorMessage } from "../lib/utils/error";
+import { tryCatch } from "../lib/utils/try-catch";
 
 interface WorkerContextValue {
   busy: boolean;
@@ -33,18 +33,13 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
   const run = useCallback(async <T,>(fn: () => Promise<T>, event?: string): Promise<T | null> => {
     setBusy(true);
     setError(null);
-    try {
-      const res = await fn();
-      if (event) void trackEvent(event);
-      return res;
-    } catch (err) {
-      const message = toErrorMessage(err);
-      setError(message);
-      void sendOtlpLog("error", "error", { message });
-      return null;
-    } finally {
-      setBusy(false);
-    }
+    return tryCatch(fn, {
+      onSuccess: () => {
+        if (event) void trackEvent(event);
+      },
+      onError: (err) => setError(toErrorMessage(err)),
+      onFinished: () => setBusy(false),
+    });
   }, []);
 
   const value = useMemo<WorkerContextValue>(
