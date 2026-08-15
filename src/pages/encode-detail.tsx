@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { detect, utf8Decode } from "../lib/base64";
 import { useHistory } from "../providers/history-provider";
+import { useMediaQuery } from "../hooks/use-media-query";
 import { formatBytes } from "../lib/utils/format";
 import { SplitPane } from "../components/split-pane";
 import { RecordDetail, recordVariations } from "../components/record-detail";
@@ -10,10 +11,29 @@ import { PreviewPanel, type PreviewData } from "../components/preview-panel";
 import { FullscreenViewer } from "../components/fullscreen-viewer";
 import { Shimmer } from "../components/ui";
 
+function DetailLayout({
+  left,
+  right,
+  isDesktop,
+}: {
+  left: ReactNode;
+  right: ReactNode;
+  isDesktop: boolean;
+}) {
+  if (isDesktop) return <SplitPane left={left} right={right} />;
+  return (
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      <div className="h-[45%] min-h-0 shrink-0">{left}</div>
+      <div className="min-h-0 flex-1 border-t border-edge">{right}</div>
+    </div>
+  );
+}
+
 export default function EncodeDetailPage() {
   const { t, i18n } = useTranslation();
   const { uuid } = useParams<{ uuid: string }>();
   const { records, ready, getBase64 } = useHistory();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const [selectedId, setSelectedId] = useState("raw");
   const [exportBase64, setExportBase64] = useState<string | null>(null);
   const [base64Loading, setBase64Loading] = useState(false);
@@ -105,7 +125,8 @@ export default function EncodeDetailPage() {
   return (
     <>
       <div className="flex min-h-0 w-full flex-1 flex-col">
-        <SplitPane
+        <DetailLayout
+          isDesktop={isDesktop}
           left={
             <RecordDetail
               record={record}

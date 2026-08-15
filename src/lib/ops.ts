@@ -5,6 +5,7 @@ import type {
   DownscaleOptions,
   DownscaleResult,
   EncodeAllResult,
+  EncodeSelection,
   JwtParts,
   Variation,
 } from "./types";
@@ -186,6 +187,45 @@ export async function opEncodeAll(bytes: Uint8Array): Promise<EncodeAllResult> {
     },
     { log: false },
   );
+  return {
+    base64,
+    mime: info.mime,
+    kind: info.kind,
+    rawSizeBytes: bytes.byteLength,
+    rawBase64Length: base64.length,
+    variations,
+    ms: performance.now() - t0,
+  };
+}
+
+export async function opEncodeSelected(
+  bytes: Uint8Array,
+  selections: EncodeSelection[],
+): Promise<EncodeAllResult> {
+  const t0 = performance.now();
+  const info = detect(bytes);
+  const base64 = bytesToBase64(bytes);
+  const results = await Promise.all(
+    selections.map((sel) =>
+      tryCatch<Variation>(
+        async () => {
+          const t0 = performance.now();
+          const compressed = await compressBytes(bytes, sel.algorithm, sel.quality);
+          const encoded = bytesToBase64(compressed);
+          return {
+            algorithm: sel.algorithm,
+            quality: sel.quality,
+            byteLength: compressed.byteLength,
+            base64Length: encoded.length,
+            base64: encoded,
+            ms: performance.now() - t0,
+          };
+        },
+        { log: false },
+      ),
+    ),
+  );
+  const variations = results.filter((v): v is Variation => v !== null);
   return {
     base64,
     mime: info.mime,

@@ -28,3 +28,11 @@ export const DECOMPRESS_OPTIONS: { id: DecompressOption; label: string }[] = [
 export const COMPRESSION_QUALITIES = [10, 20, 30, 40, 50, 60, 70, 80, 90] as const;
 
 export const QUALITY_ORIGINAL = 100;
+
+export const ALL_COMPRESSION_ALGOS: CompressFormat[] = [
+  "gzip",
+  "deflate",
+  "deflate-raw",
+  "brotli",
+  "lz",
+];

@@ -8,7 +8,7 @@ import type {
 } from "../lib/types";
 import { bytesToBase64 } from "../lib/base64";
 import { detect } from "../lib/base64";
-import { opDecode, opDownscale } from "../lib/ops";
+import { opDecode, opDownscale, opEncodeSelected } from "../lib/ops";
 import { COMPRESSION_QUALITIES, QUALITY_ORIGINAL } from "../constants/compression";
 
 interface CompressResponse {
@@ -119,6 +119,11 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
       case "encodeAll": {
         const result = await encodeAllInWorker(new Uint8Array(req.bytes));
         reply({ id: req.id, ok: true, type: "encodeAll", result });
+        break;
+      }
+      case "encodeSelected": {
+        const result = await opEncodeSelected(new Uint8Array(req.bytes), req.selections);
+        reply({ id: req.id, ok: true, type: "encodeSelected", result });
         break;
       }
       case "decode": {

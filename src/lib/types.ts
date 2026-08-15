@@ -84,8 +84,14 @@ export type DecompressOption = "auto" | CompressFormat | null;
 
 export type ExportFormat = "raw" | "datauri" | "env" | "k8s";
 
+export interface EncodeSelection {
+  algorithm: CompressFormat;
+  quality: number;
+}
+
 export type WorkerRequest =
   | { id: string; type: "encodeAll"; bytes: ArrayBuffer }
+  | { id: string; type: "encodeSelected"; bytes: ArrayBuffer; selections: EncodeSelection[] }
   | { id: string; type: "decode"; input: string; decompress: DecompressOption }
   | {
       id: string;
@@ -97,6 +103,7 @@ export type WorkerRequest =
 
 export type WorkerResponse =
   | { id: string; ok: true; type: "encodeAll"; result: EncodeAllResult }
+  | { id: string; ok: true; type: "encodeSelected"; result: EncodeAllResult }
   | { id: string; ok: true; type: "decode"; result: DecodeResult }
   | { id: string; ok: true; type: "downscale"; result: DownscaleResult }
   | { id: string; ok: false; type: WorkerRequest["type"]; error: string };

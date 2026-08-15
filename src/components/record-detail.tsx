@@ -153,7 +153,7 @@ export const RecordDetail = memo(function RecordDetail({
                     : "border-transparent hover:bg-surface-2",
                 )}
               >
-                <span className="flex w-full items-center gap-3">
+                <span className="flex w-full flex-wrap items-center gap-3">
                   <span
                     className={clsx(
                       "flex size-4 shrink-0 items-center justify-center rounded-full border-2",

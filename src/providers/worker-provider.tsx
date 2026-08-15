@@ -5,6 +5,7 @@ import type {
   DownscaleOptions,
   DownscaleResult,
   EncodeAllResult,
+  EncodeSelection,
 } from "../lib/types";
 import * as worker from "../lib/worker-client";
 import { trackEvent } from "../lib/analytics/track";
@@ -16,6 +17,10 @@ interface WorkerContextValue {
   error: string | null;
   clearError: () => void;
   encodeAll: (bytes: ArrayBuffer) => Promise<EncodeAllResult | null>;
+  encodeSelected: (
+    bytes: ArrayBuffer,
+    selections: EncodeSelection[],
+  ) => Promise<EncodeAllResult | null>;
   decode: (input: string, decompress?: DecompressOption) => Promise<DecodeResult | null>;
   downscale: (
     bytes: ArrayBuffer,
@@ -48,6 +53,8 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
       error,
       clearError: () => setError(null),
       encodeAll: (bytes) => run(() => worker.encodeAll(bytes), "encode"),
+      encodeSelected: (bytes, selections) =>
+        run(() => worker.encodeSelected(bytes, selections), "encode"),
       decode: (input, decompress = "auto") =>
         run(() => worker.decodeInput(input, decompress), "decode"),
       downscale: (bytes, mime, opts) =>

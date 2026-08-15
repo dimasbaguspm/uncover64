@@ -4,6 +4,7 @@ import type {
   DownscaleOptions,
   DownscaleResult,
   EncodeAllResult,
+  EncodeSelection,
   WorkerRequest,
   WorkerResponse,
 } from "./types";
@@ -67,6 +68,16 @@ let requestSeq = 0;
 
 export function encodeAll(bytes: ArrayBuffer): Promise<EncodeAllResult> {
   return post<EncodeAllResult>({ id: `a${++requestSeq}`, type: "encodeAll", bytes }, [bytes]);
+}
+
+export function encodeSelected(
+  bytes: ArrayBuffer,
+  selections: EncodeSelection[],
+): Promise<EncodeAllResult> {
+  return post<EncodeAllResult>(
+    { id: `s${++requestSeq}`, type: "encodeSelected", bytes, selections },
+    [bytes],
+  );
 }
 
 export function decodeInput(
