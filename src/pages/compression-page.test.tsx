@@ -4,8 +4,6 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Asset, CompressionRecord } from "@/lib/db";
 import type { PreviewData } from "@/components/preview-panel";
-import { useHistory } from "@/providers/history-provider";
-import { usePreview } from "@/hooks/use-preview";
 import CompressionPage from "./compression-page";
 
 const navigate = vi.fn();

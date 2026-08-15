@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Asset } from "@/lib/db";
-import { useHistory } from "@/providers/history-provider";
 import { HistoryDrawer } from "./history-drawer";
 
 const useHistoryMock = vi.fn();

@@ -16,36 +16,38 @@ interface MockWorkerInstance {
 let captured: MockWorkerInstance | null = null;
 
 function stubWorker() {
-  class MockWorker implements MockWorkerInstance {
-    onmessage: MsgListener | null = null;
-    onerror: ((e: unknown) => void) | null = null;
-    posted: unknown[] = [];
-    transfers: unknown[] = [];
-    listeners = new Map<string, MsgListener[]>();
-
-    constructor() {
-      captured = this;
-    }
-
-    addEventListener(type: string, cb: MsgListener) {
-      const arr = this.listeners.get(type) ?? [];
-      arr.push(cb);
-      this.listeners.set(type, arr);
-    }
-
-    removeEventListener(type: string, cb: MsgListener) {
-      const arr = this.listeners.get(type) ?? [];
-      this.listeners.set(
-        type,
-        arr.filter((l) => l !== cb),
-      );
-    }
-
-    postMessage(msg: unknown, transfer?: unknown) {
-      this.posted.push(msg);
-      this.transfers.push(transfer);
-    }
-  }
+  const makeWorker = (): MockWorkerInstance => {
+    const listeners = new Map<string, MsgListener[]>();
+    const instance: MockWorkerInstance = {
+      onmessage: null,
+      onerror: null,
+      posted: [],
+      transfers: [],
+      listeners,
+      addEventListener(type: string, cb: MsgListener) {
+        const arr = listeners.get(type) ?? [];
+        arr.push(cb);
+        listeners.set(type, arr);
+      },
+      removeEventListener(type: string, cb: MsgListener) {
+        const arr = listeners.get(type) ?? [];
+        listeners.set(
+          type,
+          arr.filter((l) => l !== cb),
+        );
+      },
+      postMessage(msg: unknown, transfer?: unknown) {
+        instance.posted.push(msg);
+        instance.transfers.push(transfer);
+      },
+    };
+    captured = instance;
+    return instance;
+  };
+  // eslint-disable-next-line no-new-func
+  const MockWorker = function () {
+    return makeWorker();
+  } as unknown as typeof Worker;
   vi.stubGlobal("Worker", MockWorker);
 }
 

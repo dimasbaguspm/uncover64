@@ -4,8 +4,6 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Asset } from "@/lib/db";
 import type { EncodeAllResult } from "@/lib/types";
-import { useHistory } from "@/providers/history-provider";
-import { useEncoder } from "@/hooks/use-encoder";
 import AssetPage from "./asset-page";
 
 const navigate = vi.fn();
