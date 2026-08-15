@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import "@/i18n";
 import { IMAGE_DEFAULTS } from "@/constants/image";
 import { ImageOptimizer } from "./image-optimizer";
 

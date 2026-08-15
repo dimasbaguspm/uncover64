@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import "@/i18n";
 import type { VariationOption } from "./record-detail";
 import { VariationRow } from "./variation-row";
 

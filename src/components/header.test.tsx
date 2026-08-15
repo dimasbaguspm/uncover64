@@ -2,7 +2,6 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, useSearchParams } from "react-router-dom";
-import "@/i18n";
 import { trackEvent } from "@/lib/analytics/track";
 import { Header } from "./header";
 
