@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import { useCallback, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { useMediaQuery } from "../hooks/use-media-query";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 function loadRatio(storageKey: string): number | null {
   try {

@@ -1,7 +1,7 @@
 import { trackUmami, umamiVersion } from "./umami";
 import { ANALYTICS_PROVIDER } from "./provider";
-import { maskUrl } from "../utils/mask";
-import { getSession } from "../utils/session";
+import { maskUrl } from "@/lib/utils/mask";
+import { getSession } from "@/lib/utils/session";
 
 export type TrackAttrs = Record<string, unknown>;
 

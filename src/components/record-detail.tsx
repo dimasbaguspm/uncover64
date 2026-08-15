@@ -4,12 +4,12 @@ import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { dash } from "radash";
-import { COMPRESSION_LABELS, QUALITY_ORIGINAL } from "../constants/compression";
-import type { CompressionRecord } from "../lib/db";
-import type { CompressFormat } from "../lib/types";
-import { formatBytes, savingsPercent } from "../lib/utils/format";
-import { variationKey } from "../lib/variation";
-import { trackEvent } from "../lib/analytics/track";
+import { COMPRESSION_LABELS, QUALITY_ORIGINAL } from "@/constants/compression";
+import type { CompressionRecord } from "@/lib/db";
+import type { CompressFormat } from "@/lib/types";
+import { formatBytes, savingsPercent } from "@/lib/utils/format";
+import { variationKey } from "@/lib/variation";
+import { trackEvent } from "@/lib/analytics/track";
 import { CopyButton, Spinner } from "./ui";
 
 export interface VariationOption {

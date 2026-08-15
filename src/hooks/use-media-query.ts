@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { logDebug } from "../lib/analytics/otel";
+import { logDebug } from "@/lib/analytics/otel";
 
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState<boolean>(() => {

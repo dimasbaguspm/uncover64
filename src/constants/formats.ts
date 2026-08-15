@@ -1,4 +1,4 @@
-import type { ExportFormat } from "../lib/types";
+import type { ExportFormat } from "@/lib/types";
 
 export const EXPORT_FORMATS: { id: ExportFormat; label: string }[] = [
   { id: "raw", label: "Raw" },

@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { tryCatch } from "./try-catch";
 
-vi.mock("../analytics/otel", () => ({
+vi.mock("@/lib/analytics/otel", () => ({
   logError: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { logError } from "../analytics/otel";
+import { logError } from "@/lib/analytics/otel";
 
 afterEach(() => vi.mocked(logError).mockClear());
 

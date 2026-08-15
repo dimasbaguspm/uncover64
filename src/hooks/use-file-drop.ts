@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { logInfo } from "../lib/analytics/otel";
-import { trackEvent } from "../lib/analytics/track";
+import { logInfo } from "@/lib/analytics/otel";
+import { trackEvent } from "@/lib/analytics/track";
 
 export function useFileDrop(onFile: (file: File) => void) {
   const [isDragging, setIsDragging] = useState(false);

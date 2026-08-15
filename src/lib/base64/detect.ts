@@ -1,4 +1,4 @@
-import type { DetectKind, FileInfo } from "../types";
+import type { DetectKind, FileInfo } from "@/lib/types";
 import { utf8Decode } from "./base64";
 
 const img = (ext: string, mimeType: string, label: string): FileInfo => ({

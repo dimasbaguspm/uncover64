@@ -2,10 +2,10 @@ import { FileText, Search, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useHistory } from "../providers/history-provider";
-import { detect } from "../lib/base64";
-import { formatBytes } from "../lib/utils/format";
-import { trackEvent } from "../lib/analytics/track";
+import { useHistory } from "@/providers/history-provider";
+import { detect } from "@/lib/base64";
+import { formatBytes } from "@/lib/utils/format";
+import { trackEvent } from "@/lib/analytics/track";
 import { Badge } from "./ui";
 
 export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {

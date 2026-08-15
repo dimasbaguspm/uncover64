@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { tryCatch } from "../lib/utils/try-catch";
-import { logInfo, logWarn } from "../lib/analytics/otel";
+import { tryCatch } from "@/lib/utils/try-catch";
+import { logInfo, logWarn } from "@/lib/analytics/otel";
 
 export function useClipboard(timeoutMs = 1500) {
   const [copied, setCopied] = useState(false);

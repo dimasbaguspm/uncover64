@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { logInfo } from "../lib/analytics/otel";
+import { logInfo } from "@/lib/analytics/otel";
 
 export type Theme = "dark" | "light";
 

@@ -6,12 +6,12 @@ import type {
   DownscaleResult,
   EncodeAllResult,
   EncodeSelection,
-} from "../lib/types";
-import * as worker from "../lib/worker-client";
-import { trackEvent } from "../lib/analytics/track";
-import { logDebug, logError } from "../lib/analytics/otel";
-import { toErrorMessage } from "../lib/utils/error";
-import { tryCatch } from "../lib/utils/try-catch";
+} from "@/lib/types";
+import * as worker from "@/lib/worker-client";
+import { trackEvent } from "@/lib/analytics/track";
+import { logDebug, logError } from "@/lib/analytics/otel";
+import { toErrorMessage } from "@/lib/utils/error";
+import { tryCatch } from "@/lib/utils/try-catch";
 
 interface WorkerContextValue {
   busy: boolean;

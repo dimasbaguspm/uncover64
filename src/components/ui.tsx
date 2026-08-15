@@ -1,9 +1,9 @@
 import { clsx } from "clsx";
 import { Check, Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useClipboard } from "../hooks/use-clipboard";
-import type { FileInfo } from "../lib/types";
-import { KIND_COLORS } from "../constants/theme";
+import { useClipboard } from "@/hooks/use-clipboard";
+import type { FileInfo } from "@/lib/types";
+import { KIND_COLORS } from "@/constants/theme";
 
 export function CopyButton({
   value,

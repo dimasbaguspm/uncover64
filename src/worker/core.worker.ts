@@ -5,11 +5,11 @@ import type {
   Variation,
   WorkerRequest,
   WorkerResponse,
-} from "../lib/types";
-import { bytesToBase64 } from "../lib/base64";
-import { detect } from "../lib/base64";
-import { opDecode, opDownscale, opEncodeSelected } from "../lib/ops";
-import { COMPRESSION_QUALITIES, QUALITY_ORIGINAL } from "../constants/compression";
+} from "@/lib/types";
+import { bytesToBase64 } from "@/lib/base64";
+import { detect } from "@/lib/base64";
+import { opDecode, opDownscale, opEncodeSelected } from "@/lib/ops";
+import { COMPRESSION_QUALITIES, QUALITY_ORIGINAL } from "@/constants/compression";
 
 interface CompressResponse {
   id: string;

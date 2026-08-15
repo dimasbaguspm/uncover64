@@ -10,7 +10,7 @@ import type {
   JwtParts,
   Variation,
 } from "./types";
-import { COMPRESSION_QUALITIES, QUALITY_ORIGINAL } from "../constants/compression";
+import { COMPRESSION_QUALITIES, QUALITY_ORIGINAL } from "@/constants/compression";
 import * as pako from "pako";
 import * as LZString from "lz-string";
 import {
@@ -21,10 +21,10 @@ import {
   normalizeBase64,
   utf8Decode,
   utf8Encode,
-} from "./base64";
-import { detect } from "./base64";
-import { tryCatch } from "./utils/try-catch";
-import { logDebug, logWarn } from "./analytics/otel";
+} from "@/lib/base64";
+import { detect } from "@/lib/base64";
+import { tryCatch } from "@/lib/utils/try-catch";
+import { logDebug, logWarn } from "@/lib/analytics/otel";
 
 export class CompressionUnavailableError extends Error {}
 

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { compressBytes, opDecode, opDownscale, opEncodeAll } from "./ops";
-import { QUALITY_ORIGINAL } from "../constants/compression";
-import { bytesToBase64, bytesToBase64Url, utf8Encode } from "./base64";
+import { QUALITY_ORIGINAL } from "@/constants/compression";
+import { bytesToBase64, bytesToBase64Url, utf8Encode } from "@/lib/base64";
 
 vi.mock("brotli-wasm", async () => {
   const { createRequire } = await import("node:module");

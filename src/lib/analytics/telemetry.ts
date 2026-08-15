@@ -6,7 +6,7 @@ import { UserInteractionInstrumentation } from "@opentelemetry/instrumentation-u
 import { XMLHttpRequestInstrumentation } from "@opentelemetry/instrumentation-xml-http-request";
 import { WebTracerProvider, BatchSpanProcessor } from "@opentelemetry/sdk-trace-web";
 import { resourceFromAttributes } from "@opentelemetry/resources";
-import { ANALYTICS } from "../../constants/analytics";
+import { ANALYTICS } from "@/constants/analytics";
 
 let initialized = false;
 let activeProvider: WebTracerProvider | null = null;

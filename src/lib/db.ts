@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable, type Table } from "dexie";
 import type { CompressFormat } from "./types";
-import { logDebug } from "./analytics/otel";
+import { logDebug } from "@/lib/analytics/otel";
 
 export interface HistoryVariation {
   algorithm: CompressFormat;

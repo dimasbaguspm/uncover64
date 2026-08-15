@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { logDebug, logWarn } from "../lib/analytics/otel";
+import { logDebug, logWarn } from "@/lib/analytics/otel";
 
 const CACHE_KEY = "uncover64:github-stars";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;

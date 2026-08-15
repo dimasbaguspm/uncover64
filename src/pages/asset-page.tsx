@@ -3,22 +3,22 @@ import { ArrowLeft, CheckSquare, FileText, Square } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import type { CompressFormat } from "../lib/types";
-import { detect } from "../lib/base64";
+import type { CompressFormat } from "@/lib/types";
+import { detect } from "@/lib/base64";
 import {
   ALL_COMPRESSION_ALGOS,
   COMPRESSION_LABELS,
   COMPRESSION_QUALITIES,
   QUALITY_ORIGINAL,
-} from "../constants/compression";
-import { formatBytes } from "../lib/utils/format";
-import { useHistory } from "../providers/history-provider";
-import { useWorker } from "../providers/worker-provider";
-import { trackEvent } from "../lib/analytics/track";
-import { SplitPane } from "../components/split-pane";
-import { PaneHeader } from "../components/pane-header";
-import { PreviewPanel, type PreviewData } from "../components/preview-panel";
-import { ErrorBanner, Shimmer, Spinner, btnPrimary } from "../components/ui";
+} from "@/constants/compression";
+import { formatBytes } from "@/lib/utils/format";
+import { useHistory } from "@/providers/history-provider";
+import { useWorker } from "@/providers/worker-provider";
+import { trackEvent } from "@/lib/analytics/track";
+import { SplitPane } from "@/components/split-pane";
+import { PaneHeader } from "@/components/pane-header";
+import { PreviewPanel, type PreviewData } from "@/components/preview-panel";
+import { ErrorBanner, Shimmer, Spinner, btnPrimary } from "@/components/ui";
 
 const LZ_KEY = "lz";
 const QUALITY_ALGOS = ALL_COMPRESSION_ALGOS.filter((a) => a !== "lz");

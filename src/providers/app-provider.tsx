@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { trackEvent } from "../lib/analytics/track";
-import { logInfo } from "../lib/analytics/otel";
-import { ANALYTICS } from "../constants/analytics";
-import { initWorker } from "../lib/worker-client";
-import { tryCatch } from "../lib/utils/try-catch";
+import { trackEvent } from "@/lib/analytics/track";
+import { logInfo } from "@/lib/analytics/otel";
+import { ANALYTICS } from "@/constants/analytics";
+import { initWorker } from "@/lib/worker-client";
+import { tryCatch } from "@/lib/utils/try-catch";
 
 const INIT_TIMEOUT_MS = 5000;
 
@@ -21,7 +21,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       async () => {
         if (ANALYTICS.otelUrl) {
           await tryCatch(() =>
-            import("../lib/analytics/telemetry").then(({ initTelemetry }) => initTelemetry()),
+            import("@/lib/analytics/telemetry").then(({ initTelemetry }) => initTelemetry()),
           );
         }
         await Promise.race([

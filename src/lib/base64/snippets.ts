@@ -1,4 +1,4 @@
-import type { CompressFormat } from "../types";
+import type { CompressFormat } from "@/lib/types";
 
 const NODE_ZLIB: Record<CompressFormat, string> = {
   gzip: "gunzipSync",

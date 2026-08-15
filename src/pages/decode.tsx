@@ -1,13 +1,13 @@
 import { ClipboardPaste } from "lucide-react";
 import { useEffect, useRef, useState, type ClipboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import type { DecodeResult, DecompressOption } from "../lib/types";
-import { DECOMPRESS_OPTIONS } from "../constants/compression";
-import { useWorker } from "../providers/worker-provider";
-import { SplitPane } from "../components/split-pane";
-import { PreviewPanel } from "../components/preview-panel";
-import { ErrorBanner, Shimmer } from "../components/ui";
-import { tryCatch } from "../lib/utils/try-catch";
+import type { DecodeResult, DecompressOption } from "@/lib/types";
+import { DECOMPRESS_OPTIONS } from "@/constants/compression";
+import { useWorker } from "@/providers/worker-provider";
+import { SplitPane } from "@/components/split-pane";
+import { PreviewPanel } from "@/components/preview-panel";
+import { ErrorBanner, Shimmer } from "@/components/ui";
+import { tryCatch } from "@/lib/utils/try-catch";
 
 function optionLabel(id: DecompressOption, t: (key: string) => string): string {
   if (id === null) return t("decode.off");

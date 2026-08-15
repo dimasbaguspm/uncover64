@@ -1,7 +1,7 @@
 import { trace } from "@opentelemetry/api";
-import { ANALYTICS } from "../../constants/analytics";
-import { maskUrl } from "../utils/mask";
-import { getSession } from "../utils/session";
+import { ANALYTICS } from "@/constants/analytics";
+import { maskUrl } from "@/lib/utils/mask";
+import { getSession } from "@/lib/utils/session";
 
 const SEVERITY: Record<string, number> = {
   trace: 1,

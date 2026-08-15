@@ -1,4 +1,4 @@
-import { logError } from "../analytics/otel";
+import { logError } from "@/lib/analytics/otel";
 
 export interface TryCatchCallbacks<T> {
   /** Default true — send caught errors to OTEL. Set false for graceful/noise-free skips. */

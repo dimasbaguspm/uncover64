@@ -1,4 +1,4 @@
-import type { DownscaleOptions } from "../lib/types";
+import type { DownscaleOptions } from "@/lib/types";
 
 export const IMAGE_MAX_WIDTHS = [256, 512, 1024, 1920, 3840] as const;
 

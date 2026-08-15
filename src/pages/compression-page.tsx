@@ -2,16 +2,16 @@ import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { useHistory } from "../providers/history-provider";
-import { useWorker } from "../providers/worker-provider";
-import { trackEvent } from "../lib/analytics/track";
-import { formatBytes } from "../lib/utils/format";
-import { SplitPane } from "../components/split-pane";
-import { PaneHeader } from "../components/pane-header";
-import { RecordDetail, recordVariations } from "../components/record-detail";
-import { PreviewPanel, type PreviewData } from "../components/preview-panel";
-import { FullscreenViewer } from "../components/fullscreen-viewer";
-import { Shimmer } from "../components/ui";
+import { useHistory } from "@/providers/history-provider";
+import { useWorker } from "@/providers/worker-provider";
+import { trackEvent } from "@/lib/analytics/track";
+import { formatBytes } from "@/lib/utils/format";
+import { SplitPane } from "@/components/split-pane";
+import { PaneHeader } from "@/components/pane-header";
+import { RecordDetail, recordVariations } from "@/components/record-detail";
+import { PreviewPanel, type PreviewData } from "@/components/preview-panel";
+import { FullscreenViewer } from "@/components/fullscreen-viewer";
+import { Shimmer } from "@/components/ui";
 
 export default function CompressionPage() {
   const { t, i18n } = useTranslation();

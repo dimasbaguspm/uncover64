@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
-import type { CompressFormat } from "../lib/types";
-import { bytesToBase64 } from "../lib/base64";
-import { compressBytes } from "../lib/ops";
+import type { CompressFormat } from "@/lib/types";
+import { bytesToBase64 } from "@/lib/base64";
+import { compressBytes } from "@/lib/ops";
 interface CompressRequest {
   id: string;
   algo: CompressFormat;

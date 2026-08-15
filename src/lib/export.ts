@@ -1,6 +1,6 @@
 import type { ExportFormat } from "./types";
-import { ENV_LINE_WIDTH } from "../constants/formats";
-import { logInfo } from "./analytics/otel";
+import { ENV_LINE_WIDTH } from "@/constants/formats";
+import { logInfo } from "@/lib/analytics/otel";
 
 export function toDataUri(base64: string, mime: string): string {
   return `data:${mime};base64,${base64}`;

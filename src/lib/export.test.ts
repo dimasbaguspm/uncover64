@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { exportValue, toDataUri, toEnvSafe, toK8sSecretYAML } from "./export";
-import { formatBytes, prettyJson, savingsPercent } from "./utils/format";
+import { formatBytes, prettyJson, savingsPercent } from "@/lib/utils/format";
 
 describe("formatBytes", () => {
   it("formats units", () => {

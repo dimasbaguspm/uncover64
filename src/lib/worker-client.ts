@@ -19,7 +19,7 @@ const pending = new Map<string, Pending>();
 
 function getWorker(): Worker {
   if (!worker) {
-    worker = new Worker(new URL("../worker/core.worker.ts", import.meta.url), {
+    worker = new Worker(new URL("@/worker/core.worker.ts", import.meta.url), {
       type: "module",
     });
     worker.onmessage = (e: MessageEvent<WorkerResponse>) => {

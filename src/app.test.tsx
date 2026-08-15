@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import App from "./app";
-import { getDb } from "./lib/db";
+import { getDb } from "@/lib/db";
 
 beforeEach(async () => {
   await getDb().assets.clear();

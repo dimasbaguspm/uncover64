@@ -1,16 +1,16 @@
 import { clsx } from "clsx";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { DecodeResult, DownscaleResult } from "../lib/types";
+import type { DecodeResult, DownscaleResult } from "@/lib/types";
 import {
   IMAGE_DEFAULTS,
   IMAGE_MAX_WIDTHS,
   QUALITY_MAX,
   QUALITY_MIN,
   QUALITY_STEP,
-} from "../constants/image";
-import { useWorker } from "../providers/worker-provider";
-import { formatBytes, prettyJson, savingsPercent } from "../lib/utils/format";
+} from "@/constants/image";
+import { useWorker } from "@/providers/worker-provider";
+import { formatBytes, prettyJson, savingsPercent } from "@/lib/utils/format";
 import { ExportBar } from "./export-bar";
 import { Badge, CodeBlock, CopyButton, ErrorBanner, Spinner, btn, btnPrimary } from "./ui";
 

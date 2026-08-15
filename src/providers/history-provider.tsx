@@ -8,10 +8,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getDb, newId, type Asset, type CompressionRecord } from "../lib/db";
-import { variationKey } from "../lib/variation";
-import { utf8Decode } from "../lib/base64";
-import type { EncodeAllResult, FileInfo } from "../lib/types";
+import { getDb, newId, type Asset, type CompressionRecord } from "@/lib/db";
+import { variationKey } from "@/lib/variation";
+import { utf8Decode } from "@/lib/base64";
+import type { EncodeAllResult, FileInfo } from "@/lib/types";
 
 interface HistoryContextValue {
   assets: Asset[];

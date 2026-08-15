@@ -1,4 +1,4 @@
-import type { CompressFormat, DecompressOption } from "../lib/types";
+import type { CompressFormat, DecompressOption } from "@/lib/types";
 
 export const COMPRESSION_ALGOS: { id: CompressFormat; label: string; note: string }[] = [
   { id: "gzip", label: "Gzip", note: "native" },

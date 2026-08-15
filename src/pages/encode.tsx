@@ -1,12 +1,12 @@
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { detect } from "../lib/base64";
-import { useHistory } from "../providers/history-provider";
-import { useFileDrop } from "../hooks/use-file-drop";
-import { DropOverlay } from "../components/drop-overlay";
-import { UploadZone } from "../components/upload-zone";
-import { Spinner } from "../components/ui";
+import { detect } from "@/lib/base64";
+import { useHistory } from "@/providers/history-provider";
+import { useFileDrop } from "@/hooks/use-file-drop";
+import { DropOverlay } from "@/components/drop-overlay";
+import { UploadZone } from "@/components/upload-zone";
+import { Spinner } from "@/components/ui";
 
 export default function EncodePage() {
   const { t } = useTranslation();

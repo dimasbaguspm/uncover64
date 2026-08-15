@@ -1,11 +1,11 @@
 import { clsx } from "clsx";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { CompressFormat, ExportFormat } from "../lib/types";
-import { COMPRESSION_LABELS } from "../constants/compression";
-import { DEFAULT_SECRET_KEY, DEFAULT_SECRET_NAME, EXPORT_FORMATS } from "../constants/formats";
-import { exportValue } from "../lib/export";
-import { goSnippet, nodeSnippet } from "../lib/base64";
+import type { CompressFormat, ExportFormat } from "@/lib/types";
+import { COMPRESSION_LABELS } from "@/constants/compression";
+import { DEFAULT_SECRET_KEY, DEFAULT_SECRET_NAME, EXPORT_FORMATS } from "@/constants/formats";
+import { exportValue } from "@/lib/export";
+import { goSnippet, nodeSnippet } from "@/lib/base64";
 import { CodeBlock, CopyButton, btn, btnActive, inputCls } from "./ui";
 
 const EXPORT_LABELS: Record<ExportFormat, string> = {

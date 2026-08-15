@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { logDebug } from "../lib/analytics/otel";
+import { logDebug } from "@/lib/analytics/otel";
 
 export function useQueryParam(name: string) {
   const [searchParams, setSearchParams] = useSearchParams();
