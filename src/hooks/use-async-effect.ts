@@ -9,6 +9,8 @@ export function useAsyncEffect(
   useEffect(() => {
     let cancelled = false;
     const isActive = () => !cancelled;
+    // Contract: callers must handle rejections internally; a rejecting effect
+    // becomes an unhandled rejection.
     void effectRef.current(isActive);
     return () => {
       cancelled = true;

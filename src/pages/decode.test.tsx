@@ -4,19 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DecodeResult } from "@/lib/types";
 import DecodePage from "./decode";
 
-const encoder = { error: null as string | null };
 const decode = {
   input: "",
   decompress: "auto" as const,
   result: null as DecodeResult | null,
   pending: false,
+  error: null as string | null,
   setInput: vi.fn((v: string) => {
     decode.input = v;
   }),
   setDecompress: vi.fn(),
 };
 
-vi.mock("@/hooks/use-encoder", () => ({ useEncoder: () => encoder }));
 vi.mock("@/hooks/use-decode", () => ({ useDecode: () => decode }));
 
 function decodeResult(): DecodeResult {
@@ -34,10 +33,10 @@ function decodeResult(): DecodeResult {
 describe("DecodePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    encoder.error = null;
     decode.input = "";
     decode.result = null;
     decode.pending = false;
+    decode.error = null;
     URL.createObjectURL = vi.fn(() => "blob:mock") as unknown as typeof URL.createObjectURL;
     URL.revokeObjectURL = vi.fn() as unknown as typeof URL.revokeObjectURL;
   });
@@ -72,8 +71,8 @@ describe("DecodePage", () => {
     expect(decode.setInput).toHaveBeenCalledWith("payload");
   });
 
-  it("shows the encoder error banner", () => {
-    encoder.error = "boom";
+  it("shows the decode error banner", () => {
+    decode.error = "boom";
     render(<DecodePage />);
     expect(screen.getByRole("alert")).toHaveTextContent("boom");
   });

@@ -37,7 +37,11 @@ export function usePreview(params: {
       setPreviewLoading(true);
       const sel = variations.find((v) => v.id === selectedId);
       const b64 = await getBase64(compression.uuid, selectedId);
-      if (!b64 || !isActive()) return;
+      if (!isActive()) return;
+      if (!b64) {
+        setPreviewLoading(false);
+        return;
+      }
       const res = await decode(b64, sel?.algorithm ?? null);
       if (!isActive()) return;
       if (!res) {

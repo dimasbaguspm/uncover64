@@ -88,6 +88,16 @@ const id = {
     action: "Enkode",
     local: "Berjalan lokal — tidak ada yang diunggah.",
     preparing: "Menyiapkan variasi kompresi…",
+    export: "Ekspor",
+    secretName: "Nama Secret",
+    secretKey: "Kunci Secret",
+    snippet: "Cuplikan ({{algo}})",
+  },
+  export: {
+    raw: "Mentah",
+    datauri: "Data URI",
+    env: "Env",
+    k8s: "K8s",
   },
   decode: {
     placeholder: "Tempel base64, data URI, atau JWT untuk didekode…",

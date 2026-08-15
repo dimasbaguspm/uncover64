@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorBoundary } from "./error-boundary";
 
 const logError = vi.fn();
@@ -10,6 +10,7 @@ function Bomb(): never {
 }
 
 describe("ErrorBoundary", () => {
+  beforeEach(() => vi.clearAllMocks());
   it("renders children when no error occurs", () => {
     render(
       <ErrorBoundary>

@@ -9,10 +9,11 @@ export interface UseDecodeResult {
   setDecompress: (value: DecompressOption) => void;
   result: DecodeResult | null;
   pending: boolean;
+  error: string | null;
 }
 
 export function useDecode(delay = 350): UseDecodeResult {
-  const { decode } = useEncoder();
+  const { decode, error } = useEncoder();
   const [input, setInput] = useState("");
   const [decompress, setDecompress] = useState<DecompressOption>("auto");
   const [result, setResult] = useState<DecodeResult | null>(null);
@@ -49,5 +50,6 @@ export function useDecode(delay = 350): UseDecodeResult {
     setDecompress: setDecompressSafe,
     result,
     pending,
+    error,
   };
 }

@@ -48,4 +48,19 @@ describe("usePreview", () => {
     expect(result.current.previewLoading).toBe(false);
     expect(result.current.preview).toBeNull();
   });
+
+  it("ends loading when getBase64 returns null", async () => {
+    getBase64.mockResolvedValue(null);
+    const { result } = renderHook(() =>
+      usePreview({
+        compression,
+        asset: {} as never,
+        selectedId: "gzip:50",
+        variations: [{ id: "gzip:50", algorithm: "gzip" }],
+      }),
+    );
+    expect(result.current.previewLoading).toBe(true);
+    await waitFor(() => expect(result.current.previewLoading).toBe(false));
+    expect(result.current.preview).toBeNull();
+  });
 });

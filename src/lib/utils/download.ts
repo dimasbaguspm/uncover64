@@ -18,19 +18,13 @@ export function downloadBlob(
   URL.revokeObjectURL(url);
 }
 
-export function downloadBase64(base64: string, mime: string, filename: string): void;
-export function downloadBase64(name: string, base64: string): void;
-export function downloadBase64(
-  base64OrName: string,
-  mimeOrBase64: string,
-  maybeFilename?: string,
-): void {
-  if (maybeFilename !== undefined) {
-    const bytes = Uint8Array.from(atob(base64OrName), (c) => c.charCodeAt(0));
-    downloadBlob(new Blob([bytes], { type: mimeOrBase64 }), maybeFilename);
-  } else {
-    downloadBlob(new Blob([mimeOrBase64], { type: "text/plain" }), base64OrName);
-  }
+export function downloadBase64(base64: string, mime: string, filename: string): void {
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  downloadBlob(new Blob([bytes], { type: mime }), filename);
+}
+
+export function downloadTextFile(name: string, content: string): void {
+  downloadBlob(new Blob([content], { type: "text/plain" }), name);
 }
 
 export function createObjectUrl(bytes: Uint8Array | ArrayBuffer, mime: string): string {

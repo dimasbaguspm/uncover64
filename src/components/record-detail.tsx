@@ -6,7 +6,7 @@ import { dash, sort } from "radash";
 import { COMPRESSION_LABELS, QUALITY_ORIGINAL } from "@/constants/compression";
 import type { CompressionRecord } from "@/lib/db";
 import type { CompressFormat } from "@/lib/types";
-import { downloadBase64 } from "@/lib/utils/download";
+import { downloadTextFile } from "@/lib/utils/download";
 import { variationKey } from "@/lib/variation";
 import { VariationRow } from "./variation-row";
 
@@ -142,11 +142,11 @@ export const RecordDetail = memo(function RecordDetail({
               variation={row}
               selected={row.id === selectedId}
               recommended={row.id === bestId}
-              onSelect={() => onSelect(row)}
+              onSelect={onSelect}
               base64={base64}
               base64Loading={base64Loading}
               originalSize={record.rawSizeBytes}
-              onDownload={() => base64 && downloadBase64(downloadName(record, row), base64)}
+              onDownload={() => base64 && downloadTextFile(downloadName(record, row), base64)}
             />
           ))}
         </div>

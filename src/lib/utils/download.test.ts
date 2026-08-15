@@ -1,6 +1,12 @@
 // src/lib/utils/download.test.ts
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createObjectUrl, downloadBase64, downloadBlob, revokeObjectUrl } from "./download";
+import {
+  createObjectUrl,
+  downloadBase64,
+  downloadBlob,
+  downloadTextFile,
+  revokeObjectUrl,
+} from "./download";
 
 describe("download", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -40,5 +46,17 @@ describe("download", () => {
     vi.spyOn(document.body, "removeChild").mockReturnValue({} as never);
     downloadBase64("aGVsbG8=", "text/plain", "x.txt");
     expect(create).toHaveBeenCalledOnce();
+  });
+
+  it("downloadTextFile saves raw text as a text/plain blob", async () => {
+    const create = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:t");
+    vi.spyOn(document, "createElement").mockReturnValue({ click: vi.fn() } as never);
+    vi.spyOn(document.body, "appendChild").mockReturnValue({} as never);
+    vi.spyOn(document.body, "removeChild").mockReturnValue({} as never);
+    downloadTextFile("note.txt", "raw content");
+    expect(create).toHaveBeenCalledOnce();
+    const blob = create.mock.calls[0][0] as Blob;
+    expect(blob.type).toBe("text/plain");
+    await expect(blob.text()).resolves.toBe("raw content");
   });
 });

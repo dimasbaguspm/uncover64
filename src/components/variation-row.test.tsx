@@ -50,12 +50,12 @@ describe("VariationRow", () => {
     expect(screen.getByText("★ Recommended")).toBeInTheDocument();
   });
 
-  it("fires onSelect with the variation id on click", async () => {
+  it("fires onSelect with the variation on click", async () => {
     const user = userEvent.setup();
     const { onSelect } = renderRow();
     await user.click(screen.getByText("Gzip · 70% (30% reduced)"));
     expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect).toHaveBeenCalledWith("gzip:70");
+    expect(onSelect).toHaveBeenCalledWith(fixture());
   });
 
   it("shows copy/download actions only when selected with base64 loaded", async () => {

@@ -19,7 +19,7 @@ export function VariationRow({
   variation: VariationOption;
   selected: boolean;
   recommended: boolean;
-  onSelect: (id: string) => void;
+  onSelect: (variation: VariationOption) => void;
   base64: string | null;
   base64Loading: boolean;
   originalSize: number;
@@ -32,7 +32,7 @@ export function VariationRow({
       type="button"
       onClick={() => {
         trackEvent("compression_select", { id: variation.id, label: variation.label });
-        onSelect(variation.id);
+        onSelect(variation);
       }}
       className={clsx(
         "flex w-full flex-col rounded border px-3 py-3 text-left transition-colors",

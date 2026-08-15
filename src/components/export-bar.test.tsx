@@ -16,14 +16,14 @@ describe("ExportBar", () => {
   it("switches to a data URI", async () => {
     const user = userEvent.setup();
     renderBar();
-    await user.click(screen.getByRole("button", { name: "export.datauri" }));
+    await user.click(screen.getByRole("button", { name: "Data URI" }));
     expect(screen.getByDisplayValue("data:text/plain;base64,aGk=")).toBeInTheDocument();
   });
 
   it("reveals secret fields and renders k8s YAML", async () => {
     const user = userEvent.setup();
     renderBar();
-    await user.click(screen.getByRole("button", { name: "export.k8s" }));
+    await user.click(screen.getByRole("button", { name: "K8s" }));
     screen.getByDisplayValue(/apiVersion: v1/);
     screen.getByDisplayValue(/kind: Secret/);
     expect(screen.getByDisplayValue("my-secret")).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe("ExportBar", () => {
   it("edits the secret name and reflects it in the YAML", async () => {
     const user = userEvent.setup();
     renderBar();
-    await user.click(screen.getByRole("button", { name: "export.k8s" }));
+    await user.click(screen.getByRole("button", { name: "K8s" }));
     const nameInput = screen.getByDisplayValue("my-secret");
     await user.clear(nameInput);
     await user.type(nameInput, "renamed");

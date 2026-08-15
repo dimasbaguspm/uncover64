@@ -1,7 +1,6 @@
 import { ClipboardPaste } from "lucide-react";
 import { type ClipboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useEncoder } from "@/hooks/use-encoder";
 import { useDecode } from "@/hooks/use-decode";
 import { DecompressSelect } from "@/components/decompress-select";
 import { SplitPane } from "@/components/split-pane";
@@ -11,8 +10,7 @@ import { tryCatch } from "@/lib/utils/try-catch";
 
 export default function DecodePage() {
   const { t } = useTranslation();
-  const { error } = useEncoder();
-  const { input, setInput, decompress, setDecompress, result, pending } = useDecode();
+  const { input, setInput, decompress, setDecompress, result, pending, error } = useDecode();
 
   const paste = async () => {
     await tryCatch(

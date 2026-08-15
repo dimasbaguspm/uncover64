@@ -88,6 +88,16 @@ const en = {
     action: "Encode",
     local: "Runs locally — nothing is uploaded.",
     preparing: "Preparing compression variations…",
+    export: "Export",
+    secretName: "Secret name",
+    secretKey: "Secret key",
+    snippet: "Snippet ({{algo}})",
+  },
+  export: {
+    raw: "Raw",
+    datauri: "Data URI",
+    env: "Env",
+    k8s: "K8s",
   },
   decode: {
     placeholder: "Paste base64, a data URI, or a JWT to decode…",
@@ -101,6 +111,7 @@ const en = {
     liveHint: "Start typing to preview the decoded payload.",
   },
   result: {
+    optimize: "Optimize",
     maxWidth: "Max width",
     reencode: "Re-encode",
     original: "Original {{width}}×{{height}} · {{size}}",
