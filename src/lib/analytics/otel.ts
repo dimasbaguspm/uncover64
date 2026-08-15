@@ -19,9 +19,21 @@ function valueOf(v: unknown): AttrValue {
   return { stringValue: String(v ?? "") };
 }
 
+/** Rich, always-on context attached to every log. */
+function context(props?: Record<string, unknown>): Record<string, unknown> {
+  return {
+    browser: typeof navigator !== "undefined" ? navigator.userAgent : "",
+    version: import.meta.env.VITE_APP_VERSION ?? "",
+    environment: import.meta.env.MODE,
+    page: typeof location !== "undefined" ? location.pathname : "",
+    url: typeof location !== "undefined" ? location.href : "",
+    ...props,
+  };
+}
+
 /**
- * Send an event as an OTLP JSON log to `${otelUrl}/v1/logs` — the same
- * endpoint/payload shape the collector accepts (verified with curl).
+ * Send a log as OTLP JSON to `${otelUrl}/v1/logs` — the same endpoint/payload
+ * shape the collector accepts (verified with curl).
  */
 export async function sendOtlpLog(
   name: string,
@@ -30,12 +42,21 @@ export async function sendOtlpLog(
 ): Promise<void> {
   const base = ANALYTICS.otelUrl;
   if (!base) return;
-  const attributes = Object.entries(props ?? {}).map(([k, v]) => ({ key: k, value: valueOf(v) }));
+  const attributes = Object.entries(context(props)).map(([k, v]) => ({
+    key: k,
+    value: valueOf(v),
+  }));
   const body = {
     resourceLogs: [
       {
         resource: {
-          attributes: [{ key: "service.name", value: { stringValue: "uncover64" } }],
+          attributes: [
+            { key: "service.name", value: { stringValue: "uncover64" } },
+            {
+              key: "service.version",
+              value: { stringValue: import.meta.env.VITE_APP_VERSION ?? "" },
+            },
+          ],
         },
         scopeLogs: [
           {
@@ -46,7 +67,7 @@ export async function sendOtlpLog(
                 severityText: level.toUpperCase(),
                 timeUnixNano: String(Date.now() * 1e6),
                 body: { stringValue: name },
-                ...(attributes.length ? { attributes } : {}),
+                attributes,
               },
             ],
           },

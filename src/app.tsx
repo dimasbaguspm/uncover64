@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
-import { Bookmark, Globe, History, Lightbulb, MessageSquareText, Moon, Sun } from "lucide-react";
-import { useEffect, useRef, type ComponentType } from "react";
+import { Bookmark, Globe, History, MessageSquareText, Moon, Sun } from "lucide-react";
+import { useEffect, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import EncodePage from "./pages/encode";
@@ -17,9 +17,9 @@ import "./i18n";
 import { LANGUAGES, setLocale } from "./i18n";
 import { useTheme } from "./hooks/use-theme";
 import { useQueryParam } from "./hooks/use-query-param";
-import { sendOtlpLog } from "./lib/analytics/otel";
+import { trackMatomoEvent, initMatomo } from "./lib/analytics/matomo";
 import { Drawer } from "./components/drawer";
-import { TipsModal } from "./components/tips-modal";
+import { ErrorBoundary } from "./components/error-boundary";
 import { HistoryDrawer } from "./components/history-drawer";
 import { GithubIcon } from "./components/icons/github-icon";
 
@@ -71,19 +71,9 @@ function Shell() {
   const { t, i18n } = useTranslation();
   const { theme, toggle } = useTheme();
   const [drawer, setDrawer] = useQueryParam("drawer");
-  const [modal, setModal] = useQueryParam("modal");
   const version = import.meta.env.VITE_APP_VERSION;
 
-  // Telemetry: route navigation, clicks on interactive elements, and pastes.
-  const location = useLocation();
-  const lastPathRef = useRef(location.pathname);
-  useEffect(() => {
-    if (lastPathRef.current !== location.pathname) {
-      void sendOtlpLog("navigate", "info", { path: location.pathname });
-      lastPathRef.current = location.pathname;
-    }
-  }, [location.pathname]);
-
+  // Product events → Matomo (navigation is auto-tracked by the Matomo script).
   useEffect(() => {
     let lastClick = 0;
     const onClick = (e: MouseEvent) => {
@@ -92,15 +82,14 @@ function Shell() {
       lastClick = now;
       const el = (e.target as HTMLElement | null)?.closest?.("button, a") as HTMLElement | null;
       if (!el) return;
-      void sendOtlpLog("click", "info", {
-        tag: el.tagName.toLowerCase(),
-        text: (el.textContent ?? "").trim().slice(0, 60),
-      });
+      trackMatomoEvent("interaction", "click", (el.textContent ?? "").trim().slice(0, 60));
     };
     const onPaste = (e: ClipboardEvent) => {
-      void sendOtlpLog("paste", "info", {
-        length: (e.clipboardData?.getData("text") ?? "").length,
-      });
+      trackMatomoEvent(
+        "interaction",
+        "paste",
+        String((e.clipboardData?.getData("text") ?? "").length),
+      );
     };
     window.addEventListener("click", onClick);
     document.addEventListener("paste", onPaste);
@@ -158,7 +147,14 @@ function Shell() {
             {ROUTES.map((r) => (
               <Route key={r.path} path={r.path} element={<TabElement path={r.path} />} />
             ))}
-            <Route path="/encode/:uuid" element={<EncodeDetailPage />} />
+            <Route
+              path="/encode/:uuid"
+              element={
+                <ErrorBoundary>
+                  <EncodeDetailPage />
+                </ErrorBoundary>
+              }
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
@@ -174,15 +170,6 @@ function Shell() {
                 className="rounded p-1.5 text-dim transition-colors hover:bg-surface-2 hover:text-ink"
               >
                 <Bookmark className="size-4" aria-hidden />
-              </button>
-              <button
-                type="button"
-                onClick={() => setModal("tips")}
-                aria-label={t("menu.tips")}
-                title={t("menu.tips")}
-                className="rounded p-1.5 text-dim transition-colors hover:bg-surface-2 hover:text-ink"
-              >
-                <Lightbulb className="size-4" aria-hidden />
               </button>
             </div>
 
@@ -254,13 +241,13 @@ function Shell() {
           </div>
         ))}
       </Drawer>
-      <TipsModal open={modal === "tips"} onClose={() => setModal(null)} />
     </>
   );
 }
 
 export default function App() {
   useEffect(() => {
+    initMatomo();
     if (ANALYTICS.otelUrl) {
       void import("./lib/analytics/faro").then(({ initFaro }) => initFaro());
     }
@@ -280,5 +267,9 @@ export default function App() {
 
 function TabElement({ path }: { path: string }) {
   const Comp = TAB_COMPONENTS[path];
-  return <Comp />;
+  return (
+    <ErrorBoundary>
+      <Comp />
+    </ErrorBoundary>
+  );
 }

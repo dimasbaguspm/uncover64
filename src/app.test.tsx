@@ -21,7 +21,6 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "Diff" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Saved history" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Changelog" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Tips" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "GitHub" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Feedback" })).toBeInTheDocument();
   });
@@ -41,14 +40,6 @@ describe("App", () => {
 
     await user.click(screen.getByRole("link", { name: "Diff" }));
     expect(screen.getByPlaceholderText(/Paste base64 \(A\)/i)).toBeInTheDocument();
-  });
-
-  it("opens the tips modal", async () => {
-    const user = userEvent.setup();
-    render(<App />);
-
-    await user.click(screen.getByRole("button", { name: "Tips" }));
-    expect(screen.getByPlaceholderText("Search tips…")).toBeInTheDocument();
   });
 
   it("opens saved history drawer with empty state", async () => {

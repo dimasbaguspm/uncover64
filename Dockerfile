@@ -69,6 +69,8 @@ server {
 EOF
 
 COPY --from=build /app/dist /usr/share/nginx/html
+# Ensure static/public assets (favicon, icons) are present in the image
+COPY --from=build /app/public/ /usr/share/nginx/html/
 
 EXPOSE 80
 

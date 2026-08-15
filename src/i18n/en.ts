@@ -7,7 +7,6 @@ const en = {
   menu: {
     github: "GitHub",
     changelog: "Changelog",
-    tips: "Tips",
   },
   changelog: {
     title: "Changelog",
@@ -18,33 +17,6 @@ const en = {
     language: "Language",
     feedback: "Feedback",
     devMode: "Development Mode",
-  },
-  tips: {
-    search: "Search tips…",
-    empty: "No tips match your search.",
-    list: [
-      {
-        body: "Compress text or files before encoding to shrink the base64 payload dramatically.",
-      },
-      {
-        body: "Everything runs in a Web Worker on your machine — nothing is ever uploaded.",
-      },
-      {
-        body: "Install Uncover64 as a PWA to use it fully offline.",
-      },
-      {
-        body: "Paste a JWT anywhere in Decode to split and pretty-print its header and payload.",
-      },
-      {
-        body: "Inspect identifies file types from magic bytes — PNG, PDF, ZIP, Gzip and more.",
-      },
-      {
-        body: "Downscale images before re-encoding to cut base64 size by up to 90%.",
-      },
-      {
-        body: "Copy output as raw, data URI, .env-safe, or a Kubernetes Secret YAML.",
-      },
-    ],
   },
   common: {
     advanced: "Advanced",

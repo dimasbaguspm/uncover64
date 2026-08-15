@@ -7,7 +7,6 @@ const id = {
   menu: {
     github: "GitHub",
     changelog: "Catatan perubahan",
-    tips: "Tips",
   },
   changelog: {
     title: "Catatan perubahan",
@@ -18,33 +17,6 @@ const id = {
     language: "Bahasa",
     feedback: "Masukan",
     devMode: "Mode Pengembangan",
-  },
-  tips: {
-    search: "Cari tips…",
-    empty: "Tidak ada tips yang cocok.",
-    list: [
-      {
-        body: "Kompres teks atau file sebelum enkode untuk memperkecil payload base64 secara drastis.",
-      },
-      {
-        body: "Semua proses berjalan di Web Worker di perangkat Anda — tidak ada yang pernah diunggah.",
-      },
-      {
-        body: "Pasang Uncover64 sebagai PWA untuk dipakai sepenuhnya offline.",
-      },
-      {
-        body: "Tempel JWT di halaman Dekode untuk memisahkan dan merapikan header serta payload.",
-      },
-      {
-        body: "Inspeksi mengenali tipe file dari magic bytes — PNG, PDF, ZIP, Gzip, dan lainnya.",
-      },
-      {
-        body: "Perkecil resolusi gambar sebelum enkode ulang untuk memangkas ukuran base64 hingga 90%.",
-      },
-      {
-        body: "Salin output sebagai raw, data URI, .env-safe, atau YAML Kubernetes Secret.",
-      },
-    ],
   },
   common: {
     advanced: "Lanjutan",

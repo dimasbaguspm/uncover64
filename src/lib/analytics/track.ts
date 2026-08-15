@@ -1,5 +1,6 @@
-import { sendOtlpLog } from "./otel";
+import { trackMatomoEvent } from "./matomo";
 
-export function trackEvent(name: string, props?: Record<string, unknown>): void {
-  void sendOtlpLog(name, "info", props);
+/** Product events (encode/decode/downscale) → Matomo. */
+export function trackEvent(name: string, _props?: Record<string, unknown>): void {
+  trackMatomoEvent("action", name);
 }
