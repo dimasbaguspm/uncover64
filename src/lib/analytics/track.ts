@@ -1,5 +1,7 @@
 import { trackUmami, umamiVersion } from "./umami";
 import { ANALYTICS_PROVIDER } from "./provider";
+import { maskUrl } from "../utils/mask";
+import { getSession } from "../utils/session";
 
 export type TrackAttrs = Record<string, unknown>;
 
@@ -9,12 +11,16 @@ export type TrackAttrs = Record<string, unknown>;
  * so consumers stay decoupled from the active analytics provider.
  */
 export function trackEvent(name: string, attrs?: TrackAttrs): void {
+  const session = getSession();
   const enriched: TrackAttrs = {
     provider: ANALYTICS_PROVIDER,
     providerVersion: umamiVersion(),
     appVersion: import.meta.env.VITE_APP_VERSION ?? "",
     environment: import.meta.env.MODE,
-    page: typeof location !== "undefined" ? location.pathname : "",
+    sessionId: session.sessionId,
+    referrer: session.referrer,
+    ...session.utm,
+    page: typeof location !== "undefined" ? maskUrl(location.pathname) : "",
     ...attrs,
   };
 

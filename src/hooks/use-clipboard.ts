@@ -16,9 +16,12 @@ export function useClipboard(timeoutMs = 1500) {
         },
         {
           log: false,
-          onError: () => {
+          onError: (err) => {
             setCopied(false);
-            logWarn("clipboard copy failed", { length: value.length });
+            logWarn("clipboard copy failed", {
+              length: value.length,
+              error: err instanceof Error ? err.message : String(err),
+            });
           },
         },
       );

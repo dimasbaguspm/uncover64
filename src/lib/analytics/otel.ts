@@ -1,5 +1,7 @@
 import { trace } from "@opentelemetry/api";
 import { ANALYTICS } from "../../constants/analytics";
+import { maskUrl } from "../utils/mask";
+import { getSession } from "../utils/session";
 
 const SEVERITY: Record<string, number> = {
   trace: 1,
@@ -39,15 +41,25 @@ function traceContext(): Record<string, string> {
 
 /** Rich, always-on context attached to every log. */
 function context(props?: Record<string, unknown>): Record<string, unknown> {
+  const session = getSession();
   return {
     ...traceContext(),
+    sessionId: session.sessionId,
+    referrer: session.referrer,
+    ...session.utm,
     browser: typeof navigator !== "undefined" ? navigator.userAgent : "",
     version: import.meta.env.VITE_APP_VERSION ?? "",
     environment: import.meta.env.MODE,
-    page: typeof location !== "undefined" ? location.pathname : "",
-    url: typeof location !== "undefined" ? location.href : "",
+    page: typeof location !== "undefined" ? maskUrl(location.pathname) : "",
+    url: typeof location !== "undefined" ? maskUrl(location.href) : "",
     ...props,
   };
+}
+
+/** Current active span ids (empty object when no span is active). */
+export function currentTrace(): { traceId: string; spanId: string } | null {
+  const tc = traceContext();
+  return tc.traceId ? { traceId: tc.traceId, spanId: tc.spanId } : null;
 }
 
 const TIMEOUT_MS = 10_000;
@@ -61,6 +73,8 @@ async function postOtlpLog(
   const base = ANALYTICS.otelUrl;
   if (!base) return;
   const attributes = Object.entries(attrs).map(([k, v]) => ({ key: k, value: valueOf(v) }));
+  // Native OTLP trace/span ids let the collector join logs to their trace.
+  const tc = traceContext();
   const payload = {
     resourceLogs: [
       {
@@ -78,6 +92,7 @@ async function postOtlpLog(
             scope: { name: "uncover64" },
             logRecords: [
               {
+                ...(tc.traceId ? { traceId: tc.traceId, spanId: tc.spanId } : {}),
                 severityNumber: SEVERITY[level] ?? 9,
                 severityText: level.toUpperCase(),
                 timeUnixNano: String(Date.now() * 1e6),

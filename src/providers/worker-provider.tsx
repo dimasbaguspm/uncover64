@@ -9,7 +9,7 @@ import type {
 } from "../lib/types";
 import * as worker from "../lib/worker-client";
 import { trackEvent } from "../lib/analytics/track";
-import { logDebug } from "../lib/analytics/otel";
+import { logDebug, logError } from "../lib/analytics/otel";
 import { toErrorMessage } from "../lib/utils/error";
 import { tryCatch } from "../lib/utils/try-catch";
 
@@ -41,16 +41,22 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
       const started = performance.now();
       setBusy(true);
       setError(null);
-      const label = message ?? event ?? "worker op";
-      logDebug(`worker ${label} start`);
+      const opName = event ?? message ?? "op";
+      logDebug(`worker ${opName} start`);
+      // tryCatch logs errors by default; opt out so the failure is logged
+      // exactly once here, with the op context and timing.
       return tryCatch(fn, {
+        log: false,
         message,
         onSuccess: () => {
           if (event) void trackEvent(event);
-          logDebug(`worker ${label} ok`, { ms: Math.round(performance.now() - started) });
+          logDebug(`worker ${opName} ok`, { ms: Math.round(performance.now() - started) });
         },
         onError: (err) => {
           setError(toErrorMessage(err));
+          logError(err, message ?? `worker ${opName} failed`, {
+            ms: Math.round(performance.now() - started),
+          });
         },
         onFinished: () => setBusy(false),
       });
