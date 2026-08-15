@@ -13,6 +13,7 @@ import type {
 import { QUALITY_ORIGINAL } from "@/constants/compression";
 import * as pako from "pako";
 import * as LZString from "lz-string";
+import { sum } from "radash";
 import {
   base64ToBytes,
   base64UrlToBytes,
@@ -73,7 +74,7 @@ async function pipeStream(
     if (done) break;
     chunks.push(value);
   }
-  const total = chunks.reduce((n, c) => n + c.byteLength, 0);
+  const total = sum(chunks, (c) => c.byteLength);
   const out = new Uint8Array(total);
   let off = 0;
   for (const c of chunks) {

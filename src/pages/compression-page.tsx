@@ -6,6 +6,7 @@ import { useHistory } from "@/providers/history-provider";
 import { useWorker } from "@/providers/worker-provider";
 import { trackEvent } from "@/lib/analytics/track";
 import { formatBytes } from "@/lib/utils/format";
+import { sort } from "radash";
 import { SplitPane } from "@/components/split-pane";
 import { PaneHeader } from "@/components/pane-header";
 import { RecordDetail, recordVariations } from "@/components/record-detail";
@@ -99,10 +100,7 @@ export default function CompressionPage() {
   const selectedVariation = variations.find((v) => v.id === selectedId);
 
   const bestId = useMemo(() => {
-    let best: (typeof variations)[number] | null = null;
-    for (const v of variations) {
-      if (v.algorithm && (!best || v.byteLength < best.byteLength)) best = v;
-    }
+    const best = sort(variations.filter((v) => v.algorithm), (v) => v.byteLength)[0];
     return best?.id ?? null;
   }, [variations]);
 

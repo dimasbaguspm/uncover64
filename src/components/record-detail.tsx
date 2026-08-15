@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUp, Download } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
-import { dash } from "radash";
+import { dash, sort } from "radash";
 import { COMPRESSION_LABELS, QUALITY_ORIGINAL } from "@/constants/compression";
 import type { CompressionRecord } from "@/lib/db";
 import type { CompressFormat } from "@/lib/types";
@@ -97,10 +97,7 @@ export const RecordDetail = memo(function RecordDetail({
   }, [rows, sortKey, asc]);
 
   const bestId = useMemo(() => {
-    let best: VariationOption | null = null;
-    for (const r of rows) {
-      if (r.algorithm && (!best || r.byteLength < best.byteLength)) best = r;
-    }
+    const best = sort(rows.filter((r) => r.algorithm), (r) => r.byteLength)[0];
     return best?.id ?? null;
   }, [rows]);
 
