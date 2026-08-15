@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { opDecode, opDownscale, opEncodeAll } from "./ops";
+import { compressBytes, opDecode, opDownscale, opEncodeAll } from "./ops";
+import { QUALITY_ORIGINAL } from "../constants/compression";
 import { bytesToBase64, bytesToBase64Url, utf8Encode } from "./base64";
 
 vi.mock("brotli-wasm", async () => {
@@ -30,7 +31,7 @@ describe("opEncodeAll", () => {
     expect(algorithms).toContain("deflate");
     expect(algorithms).toContain("brotli");
     for (const v of res.variations) {
-      expect(v.byteLength).toBeLessThan(res.rawSizeBytes);
+      expect(v.byteLength).toBeLessThanOrEqual(res.rawSizeBytes);
       expect(v.base64).toMatch(/^[A-Za-z0-9+/]+=*$/);
       expect(v.base64Length).toBe(v.base64.length);
     }
@@ -54,7 +55,9 @@ describe("opEncodeAll", () => {
       byAlgo.set(v.algorithm, arr);
     }
     for (const qualities of byAlgo.values()) {
-      expect([...qualities].sort((a, b) => a - b)).toEqual([10, 20, 30, 40, 50, 60, 70, 80, 90]);
+      expect([...qualities].sort((a, b) => a - b)).toEqual([
+        10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+      ]);
     }
     const gzip = res.variations
       .filter((v) => v.algorithm === "gzip")
@@ -73,6 +76,15 @@ describe("opEncodeAll", () => {
     const lz = res.variations.find((v) => v.algorithm === "lz");
     expect(lz).toBeDefined();
     const decoded = await opDecode(lz!.base64, "lz");
+    expect(decoded.text).toBe(text);
+  });
+
+  it("compresses with lz regardless of the quality value", async () => {
+    const text = "lz quality ".repeat(200);
+    const raw = utf8Encode(text);
+    const compressed = await compressBytes(raw, "lz", QUALITY_ORIGINAL);
+    expect(compressed.byteLength).toBeLessThan(raw.byteLength);
+    const decoded = await opDecode(bytesToBase64(compressed), "lz");
     expect(decoded.text).toBe(text);
   });
 

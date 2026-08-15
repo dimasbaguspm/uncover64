@@ -2,10 +2,13 @@ import { clsx } from "clsx";
 import { ArrowDown, ArrowUp, Download } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import { dash } from "radash";
 import { COMPRESSION_LABELS, QUALITY_ORIGINAL } from "../constants/compression";
-import type { HistoryRecord } from "../lib/db";
+import type { CompressionRecord } from "../lib/db";
 import type { CompressFormat } from "../lib/types";
 import { formatBytes, savingsPercent } from "../lib/utils/format";
+import { variationKey } from "../lib/variation";
 import { CopyButton, Spinner } from "./ui";
 
 export interface VariationOption {
@@ -18,11 +21,6 @@ export interface VariationOption {
   ms?: number;
 }
 
-export function variationKey(algorithm: CompressFormat | null, quality?: number): string {
-  if (algorithm === null) return "raw";
-  return quality !== undefined ? `${algorithm}:${quality}` : algorithm;
-}
-
 function downloadBase64(name: string, base64: string) {
   const blob = new Blob([base64], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
@@ -33,10 +31,16 @@ function downloadBase64(name: string, base64: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function recordVariations(
-  record: HistoryRecord,
-  t: (k: string) => string,
-): VariationOption[] {
+function downloadName(record: CompressionRecord, row: VariationOption): string {
+  const parts = ["uncover64", dash(record.name)];
+  if (row.algorithm) {
+    parts.push(dash(COMPRESSION_LABELS[row.algorithm]));
+    if (row.algorithm !== "lz" && row.quality !== undefined) parts.push(String(row.quality));
+  }
+  return `${parts.join("_")}.b64`;
+}
+
+export function recordVariations(record: CompressionRecord, t: TFunction): VariationOption[] {
   return [
     {
       id: "raw",
@@ -51,7 +55,11 @@ export function recordVariations(
       label:
         v.algorithm === "lz"
           ? COMPRESSION_LABELS.lz
-          : `${COMPRESSION_LABELS[v.algorithm]} · ${v.quality}`,
+          : t("record.variationLabel", {
+              algo: COMPRESSION_LABELS[v.algorithm],
+              quality: v.quality,
+              reduced: 100 - v.quality,
+            }),
       algorithm: v.algorithm,
       quality: v.quality,
       byteLength: v.byteLength,
@@ -70,7 +78,7 @@ export const RecordDetail = memo(function RecordDetail({
   base64,
   base64Loading,
 }: {
-  record: HistoryRecord;
+  record: CompressionRecord;
   selectedId: string;
   onSelect: (variation: VariationOption) => void;
   base64: string | null;
@@ -191,12 +199,7 @@ export const RecordDetail = memo(function RecordDetail({
                           <CopyButton value={base64} className="!px-1.5 !py-1 text-xs" />
                           <button
                             type="button"
-                            onClick={() =>
-                              downloadBase64(
-                                `${record.name}-${row.label.toLowerCase()}.b64`,
-                                base64,
-                              )
-                            }
+                            onClick={() => downloadBase64(downloadName(record, row), base64)}
                             aria-label={t("record.download")}
                             className="rounded border border-edge bg-surface-2 p-1 text-dim transition-colors hover:border-edge-strong hover:text-ink"
                           >

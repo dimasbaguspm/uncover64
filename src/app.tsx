@@ -4,7 +4,8 @@ import { useEffect, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import EncodePage from "./pages/encode";
-import EncodeDetailPage from "./pages/encode-detail";
+import AssetPage from "./pages/asset-page";
+import CompressionPage from "./pages/compression-page";
 import DecodePage from "./pages/decode";
 import DiffPage from "./pages/diff";
 import { WorkerProvider, useWorker } from "./providers/worker-provider";
@@ -149,10 +150,18 @@ function Shell() {
               <Route key={r.path} path={r.path} element={<TabElement path={r.path} />} />
             ))}
             <Route
-              path="/encode/:uuid"
+              path="/encode/:assetId"
               element={
                 <ErrorBoundary>
-                  <EncodeDetailPage />
+                  <AssetPage />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/encode/:assetId/compress/:compressionId"
+              element={
+                <ErrorBoundary>
+                  <CompressionPage />
                 </ErrorBoundary>
               }
             />

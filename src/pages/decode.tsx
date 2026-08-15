@@ -67,6 +67,7 @@ export default function DecodePage() {
 
   return (
     <SplitPane
+      storageKey="decode-split"
       left={
         <div className="flex h-full flex-col">
           <div className="flex items-center gap-2 border-b border-edge px-3 py-1.5">

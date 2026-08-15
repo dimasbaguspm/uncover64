@@ -5,13 +5,47 @@ import App from "./app";
 import { getDb } from "./lib/db";
 
 beforeEach(async () => {
-  await getDb().history.clear();
+  await getDb().assets.clear();
+  await getDb().compressions.clear();
+  await getDb().payloads.clear();
   window.history.pushState({}, "", "/");
 });
 
 afterEach(async () => {
-  await getDb().history.clear();
+  await getDb().assets.clear();
+  await getDb().compressions.clear();
+  await getDb().payloads.clear();
 });
+
+async function seedCompression() {
+  const assetUuid = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+  const compUuid = "11111111-2222-3333-4444-555555555555";
+  const db = getDb();
+  await db.assets.add({
+    uuid: assetUuid,
+    name: "sample.txt",
+    mime: "text/plain",
+    kind: "text",
+    sizeBytes: 5,
+    rawText: "hello",
+    bytes: new TextEncoder().encode("hello"),
+    createdAt: Date.now(),
+  });
+  await db.compressions.add({
+    uuid: compUuid,
+    assetId: assetUuid,
+    name: "sample.txt",
+    mime: "text/plain",
+    kind: "text",
+    rawSizeBytes: 5,
+    rawBase64Length: 8,
+    rawText: "hello",
+    variations: [],
+    createdAt: Date.now(),
+  });
+  await db.payloads.add({ encodeId: compUuid, algorithm: "raw", base64: "aGVsbG8=" });
+  return { assetUuid, compUuid };
+}
 
 /** Render the app and wait for the AppProvider splash to clear. */
 async function renderApp() {
@@ -56,42 +90,21 @@ describe("App", () => {
     expect(screen.getByText("No saved records yet.")).toBeInTheDocument();
   });
 
-  it("renders an encode detail page for a saved record by uuid", async () => {
-    const uuid = "11111111-2222-3333-4444-555555555555";
-    await getDb().history.add({
-      uuid,
-      createdAt: Date.now(),
-      name: "sample.txt",
-      mime: "text/plain",
-      kind: "text",
-      rawSizeBytes: 5,
-      rawBase64Length: 8,
-      rawText: "hello",
-      variations: [],
-    });
-    window.history.pushState({}, "", `/encode/${uuid}`);
+  it("renders a compression page for a saved asset", async () => {
+    const { assetUuid, compUuid } = await seedCompression();
+    window.history.pushState({}, "", `/encode/${assetUuid}/compress/${compUuid}`);
     await renderApp();
     expect(await screen.findByText("Variations")).toBeInTheDocument();
   });
 
-  it("opens a saved record from the history drawer", async () => {
-    const uuid = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
-    await getDb().history.add({
-      uuid,
-      createdAt: Date.now(),
-      name: "sample.txt",
-      mime: "text/plain",
-      kind: "text",
-      rawSizeBytes: 5,
-      rawBase64Length: 8,
-      rawText: "hello",
-      variations: [],
-    });
+  it("opens a saved asset from the history drawer", async () => {
+    await seedCompression();
     const user = userEvent.setup();
     await renderApp();
     await user.click(screen.getByRole("button", { name: "Saved history" }));
     await user.click(screen.getByRole("button", { name: /sample\.txt/ }));
-    expect(await screen.findByText("Variations")).toBeInTheDocument();
+    expect(await screen.findByText("sample.txt")).toBeInTheDocument();
+    expect(screen.getByText("Compression")).toBeInTheDocument();
   });
 
   it("redirects unknown routes to home", async () => {

@@ -25,7 +25,7 @@ export const DECOMPRESS_OPTIONS: { id: DecompressOption; label: string }[] = [
   { id: null, label: "Off" },
 ];
 
-export const COMPRESSION_QUALITIES = [10, 20, 30, 40, 50, 60, 70, 80, 90] as const;
+export const COMPRESSION_QUALITIES = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as const;
 
 export const QUALITY_ORIGINAL = 100;
 

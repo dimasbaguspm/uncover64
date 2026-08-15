@@ -8,31 +8,46 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getDb, newId, type HistoryRecord, type PayloadInput } from "../lib/db";
+import { getDb, newId, type Asset, type CompressionRecord } from "../lib/db";
+import { variationKey } from "../lib/variation";
+import { utf8Decode } from "../lib/base64";
+import type { EncodeAllResult, FileInfo } from "../lib/types";
 
 interface HistoryContextValue {
-  records: HistoryRecord[];
+  assets: Asset[];
+  compressions: CompressionRecord[];
   ready: boolean;
-  refresh: () => Promise<void>;
-  add: (
-    rec: Omit<HistoryRecord, "id" | "createdAt" | "uuid">,
-    payloads: PayloadInput[],
-  ) => Promise<HistoryRecord>;
+  getAsset: (uuid: string) => Asset | undefined;
+  getCompression: (uuid: string) => CompressionRecord | undefined;
+  compressionsForAsset: (assetId: string) => CompressionRecord[];
+  addAsset: (name: string, bytes: Uint8Array, info: FileInfo) => Promise<Asset>;
+  addCompression: (
+    assetId: string,
+    name: string,
+    res: EncodeAllResult,
+  ) => Promise<CompressionRecord>;
   getBase64: (encodeId: string, algorithm: string) => Promise<string | null>;
-  remove: (id: number) => Promise<void>;
+  removeAsset: (id: number) => Promise<void>;
+  removeCompression: (id: number) => Promise<void>;
   clear: () => Promise<void>;
 }
 
 const HistoryContext = createContext<HistoryContextValue | null>(null);
 
 export function HistoryProvider({ children }: { children: ReactNode }) {
-  const [records, setRecords] = useState<HistoryRecord[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [compressions, setCompressions] = useState<CompressionRecord[]>([]);
   const [ready, setReady] = useState(false);
   const cacheRef = useRef<Map<string, string>>(new Map());
 
   const refresh = useCallback(async () => {
-    const list = await getDb().history.orderBy("createdAt").reverse().toArray();
-    setRecords(list);
+    const db = getDb();
+    const [a, c] = await Promise.all([
+      db.assets.toArray(),
+      db.compressions.orderBy("createdAt").reverse().toArray(),
+    ]);
+    setAssets(a);
+    setCompressions(c);
     setReady(true);
   }, []);
 
@@ -40,18 +55,67 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
-  const add = useCallback(
-    async (rec: Omit<HistoryRecord, "id" | "createdAt" | "uuid">, payloads: PayloadInput[]) => {
+  const getAsset = useCallback((uuid: string) => assets.find((a) => a.uuid === uuid), [assets]);
+  const getCompression = useCallback(
+    (uuid: string) => compressions.find((c) => c.uuid === uuid),
+    [compressions],
+  );
+  const compressionsForAsset = useCallback(
+    (assetId: string) => compressions.filter((c) => c.assetId === assetId),
+    [compressions],
+  );
+
+  const addAsset = useCallback(async (name: string, bytes: Uint8Array, info: FileInfo) => {
+    const createdAt = Date.now();
+    const asset: Asset = {
+      uuid: newId(),
+      name,
+      mime: info.mime,
+      kind: info.kind,
+      sizeBytes: bytes.byteLength,
+      rawText: utf8Decode(bytes) ?? "",
+      bytes,
+      createdAt,
+    };
+    const id = await getDb().assets.add(asset);
+    const saved = { ...asset, id };
+    setAssets((prev) => [saved, ...prev]);
+    return saved;
+  }, []);
+
+  const addCompression = useCallback(
+    async (assetId: string, name: string, res: EncodeAllResult) => {
       const createdAt = Date.now();
-      const full: HistoryRecord = { ...rec, uuid: newId(), createdAt };
-      const id = await getDb().history.add(full);
-      const saved: HistoryRecord = { ...full, id };
-      if (payloads.length) {
-        await getDb().payloads.bulkAdd(
-          payloads.map((p) => ({ encodeId: saved.uuid, algorithm: p.algorithm, base64: p.base64 })),
-        );
-      }
-      setRecords((prev) => [saved, ...prev]);
+      const uuid = newId();
+      const rec: CompressionRecord = {
+        uuid,
+        assetId,
+        name,
+        mime: res.mime,
+        kind: res.kind,
+        rawSizeBytes: res.rawSizeBytes,
+        rawBase64Length: res.rawBase64Length,
+        rawText: "",
+        variations: res.variations.map((v) => ({
+          algorithm: v.algorithm,
+          quality: v.quality,
+          byteLength: v.byteLength,
+          base64Length: v.base64Length,
+          ms: v.ms,
+        })),
+        createdAt,
+      };
+      const id = await getDb().compressions.add(rec);
+      const saved = { ...rec, id };
+      await getDb().payloads.bulkAdd([
+        { encodeId: uuid, algorithm: "raw", base64: res.base64 },
+        ...res.variations.map((v) => ({
+          encodeId: uuid,
+          algorithm: variationKey(v.algorithm, v.quality),
+          base64: v.base64,
+        })),
+      ]);
+      setCompressions((prev) => [saved, ...prev]);
       return saved;
     },
     [],
@@ -67,31 +131,78 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
     return b64;
   }, []);
 
-  const remove = useCallback(
+  const removeAsset = useCallback(
     async (id: number) => {
-      const rec = records.find((r) => r.id === id);
-      await getDb().history.delete(id);
+      const asset = assets.find((a) => a.id === id);
+      if (!asset) return;
+      const comps = compressions.filter((c) => c.assetId === asset.uuid);
+      await getDb().assets.delete(id);
+      for (const c of comps) {
+        await getDb().compressions.delete(c.id!);
+        await getDb().payloads.where("encodeId").equals(c.uuid).delete();
+        for (const key of cacheRef.current.keys()) {
+          if (key.startsWith(`${c.uuid}\u0000`)) cacheRef.current.delete(key);
+        }
+      }
+      setAssets((prev) => prev.filter((a) => a.id !== id));
+      setCompressions((prev) => prev.filter((c) => c.assetId !== asset.uuid));
+    },
+    [assets, compressions],
+  );
+
+  const removeCompression = useCallback(
+    async (id: number) => {
+      const rec = compressions.find((c) => c.id === id);
+      await getDb().compressions.delete(id);
       if (rec) {
         await getDb().payloads.where("encodeId").equals(rec.uuid).delete();
         for (const key of cacheRef.current.keys()) {
           if (key.startsWith(`${rec.uuid}\u0000`)) cacheRef.current.delete(key);
         }
       }
-      setRecords((prev) => prev.filter((r) => r.id !== id));
+      setCompressions((prev) => prev.filter((c) => c.id !== id));
     },
-    [records],
+    [compressions],
   );
 
   const clear = useCallback(async () => {
-    await getDb().history.clear();
+    await getDb().assets.clear();
+    await getDb().compressions.clear();
     await getDb().payloads.clear();
     cacheRef.current.clear();
-    setRecords([]);
+    setAssets([]);
+    setCompressions([]);
   }, []);
 
   const value = useMemo<HistoryContextValue>(
-    () => ({ records, ready, refresh, add, getBase64, remove, clear }),
-    [records, ready, refresh, add, getBase64, remove, clear],
+    () => ({
+      assets,
+      compressions,
+      ready,
+      getAsset,
+      getCompression,
+      compressionsForAsset,
+      addAsset,
+      addCompression,
+      getBase64,
+      removeAsset,
+      removeCompression,
+      clear,
+    }),
+    [
+      assets,
+      compressions,
+      ready,
+      getAsset,
+      getCompression,
+      compressionsForAsset,
+      addAsset,
+      addCompression,
+      getBase64,
+      removeAsset,
+      removeCompression,
+      clear,
+    ],
   );
 
   return <HistoryContext.Provider value={value}>{children}</HistoryContext.Provider>;

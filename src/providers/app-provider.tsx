@@ -19,7 +19,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void tryCatch(
       async () => {
         if (ANALYTICS.otelUrl) {
-          await tryCatch(() => import("../lib/analytics/faro").then(({ initFaro }) => initFaro()));
+          await tryCatch(() =>
+            import("../lib/analytics/telemetry").then(({ initTelemetry }) => initTelemetry()),
+          );
         }
         await Promise.race([
           initWorker(),

@@ -47,20 +47,30 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const clearError = useCallback(() => setError(null), []);
+  const encodeAll = useCallback(
+    (bytes: ArrayBuffer) => run(() => worker.encodeAll(bytes), "encode"),
+    [run],
+  );
+  const encodeSelected = useCallback(
+    (bytes: ArrayBuffer, selections: EncodeSelection[]) =>
+      run(() => worker.encodeSelected(bytes, selections), "encode"),
+    [run],
+  );
+  const decode = useCallback(
+    (input: string, decompress: DecompressOption = "auto") =>
+      run(() => worker.decodeInput(input, decompress), "decode"),
+    [run],
+  );
+  const downscale = useCallback(
+    (bytes: ArrayBuffer, mime: string, opts: DownscaleOptions) =>
+      run(() => worker.downscaleImage(bytes, mime, opts), "downscale"),
+    [run],
+  );
+
   const value = useMemo<WorkerContextValue>(
-    () => ({
-      busy,
-      error,
-      clearError: () => setError(null),
-      encodeAll: (bytes) => run(() => worker.encodeAll(bytes), "encode"),
-      encodeSelected: (bytes, selections) =>
-        run(() => worker.encodeSelected(bytes, selections), "encode"),
-      decode: (input, decompress = "auto") =>
-        run(() => worker.decodeInput(input, decompress), "decode"),
-      downscale: (bytes, mime, opts) =>
-        run(() => worker.downscaleImage(bytes, mime, opts), "downscale"),
-    }),
-    [busy, error, run],
+    () => ({ busy, error, clearError, encodeAll, encodeSelected, decode, downscale }),
+    [busy, error, clearError, encodeAll, encodeSelected, decode, downscale],
   );
 
   return <WorkerContext.Provider value={value}>{children}</WorkerContext.Provider>;

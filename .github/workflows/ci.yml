@@ -34,7 +34,7 @@ jobs:
           tags: ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.sha }}
           build-args: |
             VITE_APP_VERSION=${{ steps.meta.outputs.sha }}
-            VITE_FARO_COLLECTOR_URL=https://otel.dimasbaguspm.dev
+            VITE_OTEL_COLLECTOR_URL=https://otel.dimasbaguspm.dev
 
       - name: Build and push image (latest / Nightly)
         uses: docker/build-push-action@v6
@@ -44,7 +44,7 @@ jobs:
           tags: ghcr.io/${{ github.repository }}:latest
           build-args: |
             VITE_APP_VERSION=Nightly
-            VITE_FARO_COLLECTOR_URL=https://otel.dimasbaguspm.dev
+            VITE_OTEL_COLLECTOR_URL=https://otel.dimasbaguspm.dev
 
       - name: Trigger deploy webhook
         env:

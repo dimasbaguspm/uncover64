@@ -3,24 +3,23 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useHistory } from "../providers/history-provider";
+import { detect } from "../lib/base64";
 import { formatBytes } from "../lib/utils/format";
+import { Badge } from "./ui";
 
 export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { records, remove, clear } = useHistory();
+  const { assets, removeAsset, clear } = useHistory();
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return records;
-    return records.filter(
-      (r) =>
-        r.name.toLowerCase().includes(q) ||
-        r.rawText.toLowerCase().includes(q) ||
-        r.mime.toLowerCase().includes(q),
+    if (!q) return assets;
+    return assets.filter(
+      (a) => a.name.toLowerCase().includes(q) || a.mime.toLowerCase().includes(q),
     );
-  }, [records, query]);
+  }, [assets, query]);
 
   if (!open) return null;
 
@@ -33,7 +32,7 @@ export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () =>
             {t("history.title")}
           </h2>
           <div className="flex items-center gap-1">
-            {records.length > 0 && (
+            {assets.length > 0 && (
               <button
                 type="button"
                 onClick={() => void clear()}
@@ -71,31 +70,32 @@ export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () =>
               <p className="text-sm text-faint">{t("history.empty")}</p>
             </div>
           ) : (
-            filtered.map((r) => (
+            filtered.map((a) => (
               <div
-                key={r.id}
+                key={a.uuid}
                 className="group mb-1.5 flex items-center gap-3 rounded-lg border border-edge bg-surface-2/40 px-2.5 py-2 transition-colors last:mb-0 hover:border-edge-strong hover:bg-surface-2"
               >
                 <button
                   type="button"
                   onClick={() => {
-                    navigate(`/encode/${r.uuid}`);
+                    navigate(`/encode/${a.uuid}`);
                   }}
                   className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
                 >
                   <span className="flex size-8 shrink-0 items-center justify-center rounded bg-accent/10">
                     <FileText className="size-4 text-accent" aria-hidden />
                   </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium text-ink">{r.name}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-ink">{a.name}</span>
                     <span className="block text-xs text-faint">
-                      {formatBytes(r.rawSizeBytes)} · {new Date(r.createdAt).toLocaleString()}
+                      {formatBytes(a.sizeBytes)} · {new Date(a.createdAt).toLocaleString()}
                     </span>
                   </span>
+                  {a.bytes.length > 0 && <Badge info={detect(a.bytes)} />}
                 </button>
                 <button
                   type="button"
-                  onClick={() => r.id !== undefined && void remove(r.id)}
+                  onClick={() => a.id !== undefined && void removeAsset(a.id)}
                   aria-label={t("history.delete")}
                   className="shrink-0 rounded p-1.5 text-faint opacity-60 transition-opacity hover:bg-[var(--tint-rose-bg)] hover:text-[var(--tint-rose-fg)] group-hover:opacity-100"
                 >

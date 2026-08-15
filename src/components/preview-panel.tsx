@@ -27,14 +27,18 @@ export const PreviewPanel = memo(function PreviewPanel({
   text,
   decompressed,
   compression,
+  selectedSize,
+  selectedChars,
   onFullscreen,
   bare,
 }: PreviewData & {
   compression?: string;
+  selectedSize?: number;
+  selectedChars?: number;
   onFullscreen?: () => void;
   bare?: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [zoom, setZoom] = useState(1);
   const [fit, setFit] = useState(false);
 
@@ -193,19 +197,31 @@ export const PreviewPanel = memo(function PreviewPanel({
       {!bare && (
         <div className="flex flex-wrap items-center gap-2 border-b border-edge px-3 py-2">
           <Badge info={info} />
-          <span className="text-xs text-faint">
-            {formatBytes(sizeBytes)}
-            {image && ` · ${image.width}×${image.height}`}
-          </span>
-          {decompressed && (
-            <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-xs text-accent">
-              {t("decode.decompressed", { algo: decompressed })}
-            </span>
-          )}
-          {compression && (
-            <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
-              {t("record.compression")} · {compression}
-            </span>
+          {compression ? (
+            <>
+              <span className="text-xs text-faint">
+                {selectedSize !== undefined ? formatBytes(selectedSize) : formatBytes(sizeBytes)}
+                {selectedChars !== undefined &&
+                  ` · ${t("common.chars", {
+                    count: selectedChars.toLocaleString(i18n.language),
+                  })}`}
+              </span>
+              <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
+                {t("record.compression")} · {compression}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-xs text-faint">
+                {formatBytes(sizeBytes)}
+                {image && ` · ${image.width}×${image.height}`}
+              </span>
+              {decompressed && (
+                <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-xs text-accent">
+                  {t("decode.decompressed", { algo: decompressed })}
+                </span>
+              )}
+            </>
           )}
         </div>
       )}

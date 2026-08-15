@@ -121,6 +121,7 @@ export async function compressBytes(
   quality = 50,
 ): Promise<Uint8Array> {
   if (algo === "lz") return lzCompress(bytes);
+  if (quality >= QUALITY_ORIGINAL) return bytes.slice(); // 100 = original
   if (algo === "brotli") return brotliCompress(bytes, qualityToBrotliLevel(quality));
   const level = qualityToPakoLevel(quality);
   if (algo === "gzip") return pako.gzip(bytes, { level });

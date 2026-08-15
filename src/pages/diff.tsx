@@ -146,6 +146,7 @@ export default function DiffPage() {
   return (
     <div className="relative flex min-h-0 w-full flex-1">
       <SplitPane
+        storageKey="diff-split"
         left={
           <textarea
             value={inputA}
