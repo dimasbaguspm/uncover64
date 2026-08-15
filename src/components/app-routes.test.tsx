@@ -25,13 +25,13 @@ function renderRoutes(initialPath: string) {
 }
 
 describe("AppRoutes", () => {
-  it("renders the decode page at /decode", () => {
+  it("renders the decode page at /decode", async () => {
     renderRoutes("/decode");
-    expect(screen.getByPlaceholderText(/Paste base64/)).toBeInTheDocument();
+    expect(await screen.findByPlaceholderText(/Paste base64/)).toBeInTheDocument();
   });
 
-  it("renders the encode page at /", () => {
+  it("renders the encode page at /", async () => {
     renderRoutes("/");
-    expect(screen.getByText(/Drop a file to encode it as base64/)).toBeInTheDocument();
+    expect(await screen.findByText(/Drop a file to encode it as base64/)).toBeInTheDocument();
   });
 });

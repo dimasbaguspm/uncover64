@@ -74,8 +74,8 @@ describe("App", () => {
     await renderApp();
 
     await user.click(screen.getByRole("link", { name: "Decode" }));
-    expect(screen.getByPlaceholderText(/Paste base64, a data URI/i)).toBeInTheDocument();
-    expect(screen.getByText(/Start typing to preview/i)).toBeInTheDocument();
+    expect(await screen.findByPlaceholderText(/Paste base64, a data URI/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Start typing to preview/i)).toBeInTheDocument();
   });
 
   it("opens saved history drawer with empty state", async () => {
@@ -100,7 +100,7 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Saved history" }));
     await user.click(screen.getByRole("button", { name: /sample\.txt/ }));
     expect(await screen.findByText("sample.txt")).toBeInTheDocument();
-    expect(screen.getByText("Compression")).toBeInTheDocument();
+    expect(await screen.findByText("Compression")).toBeInTheDocument();
   });
 
   it("redirects unknown routes to home", async () => {

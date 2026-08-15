@@ -1,11 +1,14 @@
 import type { ComponentType } from "react";
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { ErrorBoundary } from "@/components/error-boundary";
 import { ROUTES } from "@/constants/routes";
-import AssetPage from "@/pages/asset-page";
-import CompressionPage from "@/pages/compression-page";
-import DecodePage from "@/pages/decode";
-import EncodePage from "@/pages/encode";
+import { PageSuspense } from "./page-suspense";
+import { withErrorBoundary } from "./with-error-boundary";
+
+const EncodePage = withErrorBoundary(lazy(() => import("@/pages/encode")));
+const DecodePage = withErrorBoundary(lazy(() => import("@/pages/decode")));
+const AssetPage = withErrorBoundary(lazy(() => import("@/pages/asset-page")));
+const CompressionPage = withErrorBoundary(lazy(() => import("@/pages/compression-page")));
 
 const TAB_COMPONENTS: Record<string, ComponentType> = {
   "/": EncodePage,
@@ -14,36 +17,20 @@ const TAB_COMPONENTS: Record<string, ComponentType> = {
 
 function TabElement({ path }: { path: string }) {
   const Comp = TAB_COMPONENTS[path];
-  return (
-    <ErrorBoundary>
-      <Comp />
-    </ErrorBoundary>
-  );
+  return <Comp />;
 }
 
 export function AppRoutes() {
   return (
-    <Routes>
-      {ROUTES.map((r) => (
-        <Route key={r.path} path={r.path} element={<TabElement path={r.path} />} />
-      ))}
-      <Route
-        path="/encode/:assetId"
-        element={
-          <ErrorBoundary>
-            <AssetPage />
-          </ErrorBoundary>
-        }
-      />
-      <Route
-        path="/encode/:assetId/compress/:compressionId"
-        element={
-          <ErrorBoundary>
-            <CompressionPage />
-          </ErrorBoundary>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <Suspense fallback={<PageSuspense />}>
+      <Routes>
+        {ROUTES.map((r) => (
+          <Route key={r.path} path={r.path} element={<TabElement path={r.path} />} />
+        ))}
+        <Route path="/encode/:assetId" element={<AssetPage />} />
+        <Route path="/encode/:assetId/compress/:compressionId" element={<CompressionPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
