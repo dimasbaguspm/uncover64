@@ -1,96 +1,43 @@
 import { ArrowLeft } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useHistory } from "@/providers/history-provider";
-import { useEncoder } from "@/hooks/use-encoder";
+import { usePreview } from "@/hooks/use-preview";
 import { trackEvent } from "@/lib/analytics/track";
 import { formatBytes } from "@/lib/utils/format";
 import { sort } from "radash";
 import { SplitPane } from "@/components/split-pane";
 import { PaneHeader } from "@/components/pane-header";
 import { RecordDetail, recordVariations } from "@/components/record-detail";
-import { PreviewPanel, type PreviewData } from "@/components/preview-panel";
+import { PreviewPanel } from "@/components/preview-panel";
 import { FullscreenViewer } from "@/components/fullscreen-viewer";
 import { Shimmer } from "@/components/ui";
+import type { Asset, CompressionRecord } from "@/lib/db";
 
-export default function CompressionPage() {
+function CompressionWorkspace({
+  compression,
+  asset,
+}: {
+  compression: CompressionRecord;
+  asset: Asset;
+}) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { assetId, compressionId } = useParams<{ assetId: string; compressionId: string }>();
-  const { getAsset, getCompression, getBase64, ready } = useHistory();
-  const { decode } = useEncoder();
   const [selectedId, setSelectedId] = useState("raw");
-  const [exportBase64, setExportBase64] = useState<string | null>(null);
-  const [base64Loading, setBase64Loading] = useState(false);
-  const [preview, setPreview] = useState<PreviewData | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
-  const asset = getAsset(assetId ?? "");
-  const compression = getCompression(compressionId ?? "");
-
-  useEffect(() => {
-    setSelectedId("raw");
-    setViewerIndex(null);
-  }, [compressionId]);
-
   const variations = useMemo(
-    () => (compression ? recordVariations(compression, t) : []),
+    () => recordVariations(compression, t),
     [compression, t],
   );
 
-  useEffect(() => {
-    if (!compression || !asset) {
-      setPreview(null);
-      setPreviewLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setPreviewLoading(true);
-    void (async () => {
-      const sel = variations.find((v) => v.id === selectedId);
-      const b64 = await getBase64(compression.uuid, selectedId);
-      if (!b64 || cancelled) return;
-      const res = await decode(b64, sel?.algorithm ?? null);
-      if (cancelled) return;
-      if (!res) {
-        setPreviewLoading(false);
-        return;
-      }
-      setPreview({
-        bytes: res.bytes,
-        info: res.info,
-        sizeBytes: res.sizeBytes,
-        image: res.image,
-        text: res.text || undefined,
-      });
-      setPreviewLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [compression, asset, selectedId, variations, getBase64, decode]);
-
-  useEffect(() => {
-    if (!compression) {
-      setExportBase64(null);
-      setBase64Loading(false);
-      return;
-    }
-    let cancelled = false;
-    setBase64Loading(true);
-    setExportBase64(null);
-    void (async () => {
-      const b64 = await getBase64(compression.uuid, selectedId);
-      if (cancelled) return;
-      setExportBase64(b64);
-      setBase64Loading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [compression, selectedId, getBase64]);
+  const { preview, previewLoading, exportBase64, base64Loading } = usePreview({
+    compression,
+    asset,
+    selectedId,
+    variations,
+  });
 
   const onSelect = useCallback((v: { id: string }) => {
     setSelectedId(v.id);
@@ -125,22 +72,6 @@ export default function CompressionPage() {
     trackEvent("fullscreen_close");
     setViewerIndex(null);
   }, []);
-
-  if (!ready) {
-    return (
-      <div className="flex w-full flex-1 items-center justify-center">
-        <Shimmer className="h-16 w-16 rounded-full" />
-      </div>
-    );
-  }
-
-  if (!compression || !asset) {
-    return (
-      <div className="flex w-full flex-1 items-center justify-center">
-        <p className="text-sm text-faint">{t("detail.notFound")}</p>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -227,4 +158,31 @@ export default function CompressionPage() {
       )}
     </>
   );
+}
+
+export default function CompressionPage() {
+  const { t } = useTranslation();
+  const { assetId, compressionId } = useParams<{ assetId: string; compressionId: string }>();
+  const { getAsset, getCompression, ready } = useHistory();
+
+  if (!ready) {
+    return (
+      <div className="flex w-full flex-1 items-center justify-center">
+        <Shimmer className="h-16 w-16 rounded-full" />
+      </div>
+    );
+  }
+
+  const asset = getAsset(assetId ?? "");
+  const compression = getCompression(compressionId ?? "");
+
+  if (!compression || !asset) {
+    return (
+      <div className="flex w-full flex-1 items-center justify-center">
+        <p className="text-sm text-faint">{t("detail.notFound")}</p>
+      </div>
+    );
+  }
+
+  return <CompressionWorkspace key={compressionId} compression={compression} asset={asset} />;
 }
