@@ -21,6 +21,7 @@ interface CompressResponse {
 }
 
 const compressWorkers = new Map<CompressFormat, Worker>();
+const compressPending = new Map<Worker, Map<string, (err: Error) => void>>();
 let cseq = 0;
 
 function compressViaWorker(
@@ -30,16 +31,32 @@ function compressViaWorker(
 ): Promise<{ byteLength: number; base64: string; ms: number }> {
   let worker = compressWorkers.get(algo);
   if (!worker) {
-    worker = new Worker(new URL("./compress.worker.ts", import.meta.url), {
+    const created = new Worker(new URL("./compress.worker.ts", import.meta.url), {
       type: "module",
     });
-    compressWorkers.set(algo, worker);
+    created.onerror = (event) => {
+      const err = new Error(event.message || `Compression worker crashed (${algo})`);
+      const pending = compressPending.get(created);
+      if (pending) {
+        for (const reject of pending.values()) reject(err);
+        pending.clear();
+      }
+      compressPending.delete(created);
+      compressWorkers.delete(algo);
+      created.terminate();
+    };
+    compressPending.set(created, new Map());
+    compressWorkers.set(algo, created);
+    worker = created;
   }
   return new Promise((resolve, reject) => {
     const id = `c${++cseq}`;
+    const pending = compressPending.get(worker)!;
+    pending.set(id, reject);
     const onMessage = (e: MessageEvent<CompressResponse>) => {
       if (e.data.id !== id) return;
       worker!.removeEventListener("message", onMessage);
+      pending.delete(id);
       if (e.data.ok && e.data.byteLength !== undefined && e.data.base64 !== undefined) {
         resolve({
           byteLength: e.data.byteLength,
@@ -54,6 +71,14 @@ function compressViaWorker(
     const copy = bytes.slice();
     worker!.postMessage({ id, algo, quality, bytes: copy.buffer }, [copy.buffer]);
   });
+}
+
+function resetCompressWorkers(): void {
+  for (const worker of compressWorkers.values()) {
+    compressPending.delete(worker);
+    worker.terminate();
+  }
+  compressWorkers.clear();
 }
 
 async function encodeAllInWorker(bytes: Uint8Array): Promise<EncodeAllResult> {
@@ -117,8 +142,12 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
   try {
     switch (req.type) {
       case "encodeAll": {
-        const result = await encodeAllInWorker(new Uint8Array(req.bytes));
-        reply({ id: req.id, ok: true, type: "encodeAll", result });
+        try {
+          const result = await encodeAllInWorker(new Uint8Array(req.bytes));
+          reply({ id: req.id, ok: true, type: "encodeAll", result });
+        } finally {
+          resetCompressWorkers();
+        }
         break;
       }
       case "encodeSelected": {
