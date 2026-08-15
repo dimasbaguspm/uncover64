@@ -2,8 +2,8 @@
 
 interface ImportMetaEnv {
   readonly VITE_FARO_COLLECTOR_URL?: string;
-  readonly VITE_MATOMO_URL?: string;
-  readonly VITE_MATOMO_SITE_ID?: string;
+  readonly VITE_UMAMI_URL?: string;
+  readonly VITE_UMAMI_WEBSITE_ID?: string;
   readonly VITE_APP_VERSION?: string;
 }
 

@@ -17,7 +17,7 @@ import "./i18n";
 import { LANGUAGES, setLocale } from "./i18n";
 import { useTheme } from "./hooks/use-theme";
 import { useQueryParam } from "./hooks/use-query-param";
-import { trackMatomoEvent, initMatomo } from "./lib/analytics/matomo";
+import { trackUmami, initUmami } from "./lib/analytics/umami";
 import { Drawer } from "./components/drawer";
 import { ErrorBoundary } from "./components/error-boundary";
 import { HistoryDrawer } from "./components/history-drawer";
@@ -73,7 +73,7 @@ function Shell() {
   const [drawer, setDrawer] = useQueryParam("drawer");
   const version = import.meta.env.VITE_APP_VERSION;
 
-  // Product events → Matomo (navigation is auto-tracked by the Matomo script).
+  // Product events → Umami (navigation is auto-tracked by the Umami script).
   useEffect(() => {
     let lastClick = 0;
     const onClick = (e: MouseEvent) => {
@@ -82,14 +82,15 @@ function Shell() {
       lastClick = now;
       const el = (e.target as HTMLElement | null)?.closest?.("button, a") as HTMLElement | null;
       if (!el) return;
-      trackMatomoEvent("interaction", "click", (el.textContent ?? "").trim().slice(0, 60));
+      trackUmami("click", {
+        tag: el.tagName.toLowerCase(),
+        text: (el.textContent ?? "").trim().slice(0, 60),
+      });
     };
     const onPaste = (e: ClipboardEvent) => {
-      trackMatomoEvent(
-        "interaction",
-        "paste",
-        String((e.clipboardData?.getData("text") ?? "").length),
-      );
+      trackUmami("paste", {
+        length: (e.clipboardData?.getData("text") ?? "").length,
+      });
     };
     window.addEventListener("click", onClick);
     document.addEventListener("paste", onPaste);
@@ -247,7 +248,7 @@ function Shell() {
 
 export default function App() {
   useEffect(() => {
-    initMatomo();
+    initUmami();
     if (ANALYTICS.otelUrl) {
       void import("./lib/analytics/faro").then(({ initFaro }) => initFaro());
     }

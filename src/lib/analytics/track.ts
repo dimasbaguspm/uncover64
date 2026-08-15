@@ -1,6 +1,6 @@
-import { trackMatomoEvent } from "./matomo";
+import { trackUmami } from "./umami";
 
-/** Product events (encode/decode/downscale) → Matomo. */
-export function trackEvent(name: string, _props?: Record<string, unknown>): void {
-  trackMatomoEvent("action", name);
+/** Product events (encode/decode/downscale) → Umami. */
+export function trackEvent(name: string, props?: Record<string, unknown>): void {
+  trackUmami(name, props);
 }
