@@ -1,7 +1,5 @@
-import { clsx } from "clsx";
 import {
   Bookmark,
-  Globe,
   History,
   MessageSquareText,
   Moon,
@@ -9,15 +7,17 @@ import {
   Star,
   Sun,
 } from "lucide-react";
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
-import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Drawer } from "@/components/drawer";
-import { DropdownMenu, MenuItem, NestedMenuItem } from "@/components/dropdown-menu";
+import { DropdownMenu, MenuItem } from "@/components/dropdown-menu";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { HistoryDrawer } from "@/components/history-drawer";
 import { GithubIcon } from "@/components/icons/github-icon";
-import { CHANGELOG } from "@/constants/changelog";
+import { Changelog } from "@/components/changelog";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { NavLinks } from "@/components/nav-links";
 import { FEEDBACK_URL, GITHUB_URL } from "@/constants/misc";
 import { ROUTES } from "@/constants/routes";
 import { useAppBoot } from "@/hooks/use-app-boot";
@@ -25,7 +25,6 @@ import { useGithubStars } from "@/hooks/use-github-stars";
 import { useNavigationTrace } from "@/hooks/use-navigation-trace";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useTheme } from "@/hooks/use-theme";
-import { LANGUAGES, setLocale } from "@/i18n";
 import { trackEvent } from "@/lib/analytics/track";
 import AssetPage from "@/pages/asset-page";
 import CompressionPage from "@/pages/compression-page";
@@ -38,46 +37,15 @@ const TAB_COMPONENTS: Record<string, ComponentType> = {
   "/decode": DecodePage,
 };
 
-function NavLinks() {
-  const { t } = useTranslation();
-  const location = useLocation();
-  return (
-    <nav className="flex items-center gap-0.5">
-      {ROUTES.map((r) => {
-        const label = t(`nav.${r.key}`);
-        const active =
-          r.path === "/"
-            ? location.pathname === "/" || location.pathname.startsWith("/encode/")
-            : location.pathname === r.path;
-        return (
-          <NavLink
-            key={r.path}
-            to={r.path}
-            end={r.path === "/"}
-            onClick={() => trackEvent("nav_click", { tab: r.key })}
-            className={clsx(
-              "rounded px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-colors",
-              active ? "bg-surface-2 text-accent" : "text-dim hover:bg-surface-2/60 hover:text-ink",
-            )}
-          >
-            {label}
-          </NavLink>
-        );
-      })}
-    </nav>
-  );
-}
-
 function RouteTracker() {
   useNavigationTrace();
   return null;
 }
 
 function Shell() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { theme, toggle } = useTheme();
   const [drawer, setDrawer] = useQueryParam("drawer");
-  const [langOpen, setLangOpen] = useState(false);
   const version = import.meta.env.VITE_APP_VERSION;
   const stars = useGithubStars();
 
@@ -232,24 +200,7 @@ function Shell() {
                 )}
               </button>
 
-              <label className="hidden items-center gap-1.5 sm:flex" title={t("footer.language")}>
-                <Globe className="size-4 text-dim" aria-hidden />
-                <select
-                  value={i18n.language}
-                  onChange={(e) => {
-                    trackEvent("language_select", { code: e.target.value });
-                    setLocale(e.target.value);
-                  }}
-                  aria-label={t("footer.language")}
-                  className="bg-transparent text-xs font-medium text-ink focus:outline-none"
-                >
-                  {LANGUAGES.map((l) => (
-                    <option key={l.code} value={l.code}>
-                      {l.code.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <LanguageSwitcher variant="select" />
 
               <a
                 href={FEEDBACK_URL}
@@ -266,28 +217,7 @@ function Shell() {
                   trigger={<MoreVertical className="size-4" aria-hidden />}
                   side="top"
                 >
-                  <NestedMenuItem label={t("footer.language")} open={langOpen} onOpen={setLangOpen}>
-                    {LANGUAGES.map((l) => (
-                      <button
-                        key={l.code}
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          trackEvent("language_select", { code: l.code });
-                          setLocale(l.code);
-                        }}
-                        className={clsx(
-                          "flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors",
-                          i18n.language === l.code ? "text-accent" : "text-ink hover:bg-surface-2",
-                        )}
-                      >
-                        {l.label}
-                        {i18n.language === l.code && (
-                          <span className="size-1.5 rounded-full bg-accent" aria-hidden />
-                        )}
-                      </button>
-                    ))}
-                  </NestedMenuItem>
+                  <LanguageSwitcher variant="menu" />
                   <div className="my-1 h-px bg-edge" />
                   <a
                     href={FEEDBACK_URL}
@@ -312,22 +242,7 @@ function Shell() {
         title={t("changelog.title")}
         onClose={() => setDrawer(null)}
       >
-        {CHANGELOG.map((entry) => (
-          <div
-            key={entry.version}
-            className="mb-2 rounded-lg border border-edge bg-surface-2/40 p-3 last:mb-0"
-          >
-            <div className="flex items-baseline justify-between">
-              <span className="text-sm font-semibold text-accent">v{entry.version}</span>
-              <span className="text-xs text-faint">{entry.date}</span>
-            </div>
-            <ul className="mt-1.5 list-inside list-disc space-y-0.5 text-xs text-dim">
-              {entry.items.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <Changelog />
       </Drawer>
     </>
   );

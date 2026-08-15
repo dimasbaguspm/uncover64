@@ -1,5 +1,4 @@
-import { clsx } from "clsx";
-import { ArrowDown, ArrowUp, Download } from "lucide-react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
@@ -7,11 +6,9 @@ import { dash, sort } from "radash";
 import { COMPRESSION_LABELS, QUALITY_ORIGINAL } from "@/constants/compression";
 import type { CompressionRecord } from "@/lib/db";
 import type { CompressFormat } from "@/lib/types";
-import { formatBytes, savingsPercent } from "@/lib/utils/format";
 import { downloadBase64 } from "@/lib/utils/download";
 import { variationKey } from "@/lib/variation";
-import { trackEvent } from "@/lib/analytics/track";
-import { CopyButton, Spinner } from "./ui";
+import { VariationRow } from "./variation-row";
 
 export interface VariationOption {
   id: string;
@@ -76,7 +73,7 @@ export const RecordDetail = memo(function RecordDetail({
   base64: string | null;
   base64Loading: boolean;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const rows = useMemo(() => recordVariations(record, t), [record, t]);
   const [sortKey, setSortKey] = useState<SortKey>("size");
   const [asc, setAsc] = useState(true);
@@ -135,91 +132,19 @@ export const RecordDetail = memo(function RecordDetail({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          {sortedRows.map((row) => {
-            const selected = row.id === selectedId;
-            const savings = row.algorithm ? savingsPercent(row.byteLength, record.rawSizeBytes) : 0;
-            return (
-              <button
-                key={row.id}
-                type="button"
-                onClick={() => {
-                  trackEvent("compression_select", { id: row.id, label: row.label });
-                  onSelect(row);
-                }}
-                className={clsx(
-                  "flex w-full flex-col rounded border px-3 py-3 text-left transition-colors",
-                  selected
-                    ? "border-accent/60 bg-accent/10"
-                    : "border-transparent hover:bg-surface-2",
-                )}
-              >
-                <span className="flex w-full flex-wrap items-center gap-3">
-                  <span
-                    className={clsx(
-                      "flex size-4 shrink-0 items-center justify-center rounded-full border-2",
-                      selected ? "border-accent" : "border-edge-strong",
-                    )}
-                  >
-                    {selected && <span className="size-2 rounded-full bg-accent" />}
-                  </span>
-                  <span
-                    className={clsx("text-sm font-medium", selected ? "text-accent" : "text-ink")}
-                  >
-                    {row.label}
-                  </span>
-                  {row.id === bestId && (
-                    <span className="flex shrink-0 items-center gap-0.5 rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent">
-                      ★ {t("record.recommended")}
-                    </span>
-                  )}
-                  <span className="ml-auto flex shrink-0 flex-col items-end">
-                    <span className="text-sm font-medium text-ink">
-                      {formatBytes(row.byteLength)}
-                    </span>
-                    <span className="text-xs text-faint">
-                      {t("common.chars", {
-                        count: row.base64Length.toLocaleString(i18n.language),
-                      })}
-                    </span>
-                  </span>
-                  <span className="flex shrink-0 items-center gap-1">
-                    {selected &&
-                      (base64Loading ? (
-                        <Spinner />
-                      ) : base64 ? (
-                        <>
-                          <CopyButton value={base64} className="!px-1.5 !py-1 text-xs" />
-                          <button
-                            type="button"
-                            onClick={() => downloadBase64(downloadName(record, row), base64)}
-                            aria-label={t("record.download")}
-                            className="rounded border border-edge bg-surface-2 p-1 text-dim transition-colors hover:border-edge-strong hover:text-ink"
-                          >
-                            <Download className="size-3.5" aria-hidden />
-                          </button>
-                        </>
-                      ) : null)}
-                  </span>
-                </span>
-                {row.algorithm && (
-                  <span className="flex w-full items-center gap-1 pl-7 text-[10px] text-faint">
-                    <span>
-                      {t("record.sizeLine", {
-                        original: formatBytes(record.rawSizeBytes),
-                        size: formatBytes(row.byteLength),
-                      })}
-                    </span>
-                    {savings > 0 && (
-                      <span className="text-accent">{t("record.savedTag", { savings })}</span>
-                    )}
-                    {row.ms !== undefined && (
-                      <span>{t("record.msTag", { ms: row.ms.toFixed(0) })}</span>
-                    )}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          {sortedRows.map((row) => (
+            <VariationRow
+              key={row.id}
+              variation={row}
+              selected={row.id === selectedId}
+              recommended={row.id === bestId}
+              onSelect={() => onSelect(row)}
+              base64={base64}
+              base64Loading={base64Loading}
+              originalSize={record.rawSizeBytes}
+              onDownload={() => base64 && downloadBase64(downloadName(record, row), base64)}
+            />
+          ))}
         </div>
       </div>
     </div>

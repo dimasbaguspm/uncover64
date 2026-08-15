@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import type { DecodeResult, DownscaleResult } from "@/lib/types";
 import {
   IMAGE_DEFAULTS,
-  IMAGE_MAX_WIDTHS,
   QUALITY_MAX,
   QUALITY_MIN,
   QUALITY_STEP,
@@ -13,6 +12,7 @@ import { useEncoder } from "@/hooks/use-encoder";
 import { formatBytes, prettyJson, savingsPercent } from "@/lib/utils/format";
 import { createObjectUrl, downloadBlob, revokeObjectUrl } from "@/lib/utils/download";
 import { ExportBar } from "./export-bar";
+import { MaxWidthSelect } from "./max-width-select";
 import { Badge, CodeBlock, CopyButton, ErrorBanner, Spinner, btn, btnPrimary } from "./ui";
 
 function ImageOptimizer({
@@ -57,20 +57,7 @@ function ImageOptimizer({
         {t("result.optimize")}
       </p>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <label className="block">
-          <span className="mb-1 block text-xs text-faint">{t("result.maxWidth")}</span>
-          <select
-            value={maxWidth}
-            onChange={(e) => setMaxWidth(Number(e.target.value))}
-            className="w-full rounded-lg border border-edge bg-surface-2 px-2 py-2 text-sm text-ink"
-          >
-            {IMAGE_MAX_WIDTHS.map((w) => (
-              <option key={w} value={w}>
-                {w}px
-              </option>
-            ))}
-          </select>
-        </label>
+        <MaxWidthSelect value={maxWidth} onChange={setMaxWidth} />
         <label className="block">
           <span className="mb-1 block text-xs text-faint">{t("common.format")}</span>
           <select

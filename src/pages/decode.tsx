@@ -1,20 +1,13 @@
 import { ClipboardPaste } from "lucide-react";
 import { type ClipboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import type { DecompressOption } from "@/lib/types";
-import { DECOMPRESS_OPTIONS } from "@/constants/compression";
 import { useEncoder } from "@/hooks/use-encoder";
 import { useDecode } from "@/hooks/use-decode";
+import { DecompressSelect } from "@/components/decompress-select";
 import { SplitPane } from "@/components/split-pane";
 import { PreviewPanel } from "@/components/preview-panel";
 import { ErrorBanner, Shimmer } from "@/components/ui";
 import { tryCatch } from "@/lib/utils/try-catch";
-
-function optionLabel(id: DecompressOption, t: (key: string) => string): string {
-  if (id === null) return t("decode.off");
-  if (id === "auto") return t("decode.auto");
-  return id[0].toUpperCase() + id.slice(1);
-}
 
 export default function DecodePage() {
   const { t } = useTranslation();
@@ -45,18 +38,7 @@ export default function DecodePage() {
       left={
         <div className="flex h-full flex-col">
           <div className="flex items-center gap-2 border-b border-edge px-3 py-1.5">
-            <select
-              value={String(decompress)}
-              onChange={(e) => setDecompress(e.target.value as DecompressOption)}
-              className="rounded border border-edge bg-surface-2 px-2 py-1 text-xs text-ink focus:border-accent/60 focus:outline-none"
-              aria-label={t("decode.decompress")}
-            >
-              {DECOMPRESS_OPTIONS.map((o) => (
-                <option key={String(o.id)} value={String(o.id)}>
-                  {optionLabel(o.id, t)}
-                </option>
-              ))}
-            </select>
+            <DecompressSelect value={decompress} onChange={setDecompress} />
             <button
               type="button"
               onClick={paste}

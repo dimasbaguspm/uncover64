@@ -1,19 +1,13 @@
-import { clsx } from "clsx";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { CompressFormat, ExportFormat } from "@/lib/types";
 import { COMPRESSION_LABELS } from "@/constants/compression";
-import { DEFAULT_SECRET_KEY, DEFAULT_SECRET_NAME, EXPORT_FORMATS } from "@/constants/formats";
+import { DEFAULT_SECRET_KEY, DEFAULT_SECRET_NAME } from "@/constants/formats";
 import { exportValue } from "@/lib/export";
 import { goSnippet, nodeSnippet } from "@/lib/base64";
-import { CodeBlock, CopyButton, btn, btnActive, inputCls } from "./ui";
-
-const EXPORT_LABELS: Record<ExportFormat, string> = {
-  raw: "export.raw",
-  datauri: "export.datauri",
-  env: "export.env",
-  k8s: "export.k8s",
-};
+import { ExportFormatList } from "./export-format-list";
+import { SnippetToggle } from "./snippet-toggle";
+import { CodeBlock, CopyButton, inputCls } from "./ui";
 
 export function ExportBar({
   base64,
@@ -43,18 +37,7 @@ export function ExportBar({
         <p className="mb-2 text-xs font-medium tracking-wide text-faint uppercase">
           {t("encode.export")}
         </p>
-        <div className="flex flex-wrap gap-2">
-          {EXPORT_FORMATS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setFormat(f.id)}
-              className={clsx(btn, format === f.id && btnActive)}
-            >
-              {t(EXPORT_LABELS[f.id])}
-            </button>
-          ))}
-        </div>
+        <ExportFormatList value={format} onChange={setFormat} />
         {format === "k8s" && (
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block">
@@ -100,18 +83,7 @@ export function ExportBar({
             <p className="text-xs font-medium tracking-wide text-faint uppercase">
               {t("encode.snippet", { algo: COMPRESSION_LABELS[compressed!] })}
             </p>
-            <div className="flex gap-1">
-              {(["node", "go"] as const).map((l) => (
-                <button
-                  key={l}
-                  type="button"
-                  onClick={() => setLang(l)}
-                  className={clsx(btn, "!px-2 !py-1 text-xs", lang === l && btnActive)}
-                >
-                  {l === "node" ? "Node.js" : "Go"}
-                </button>
-              ))}
-            </div>
+            <SnippetToggle value={lang} onChange={setLang} />
           </div>
           <CodeBlock code={snippet} />
         </div>

@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { ArrowLeft, CheckSquare, FileText, Square } from "lucide-react";
+import { ArrowLeft, CheckSquare, Square } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -18,6 +18,8 @@ import { trackEvent } from "@/lib/analytics/track";
 import { SplitPane } from "@/components/split-pane";
 import { PaneHeader } from "@/components/pane-header";
 import { PreviewPanel, type PreviewData } from "@/components/preview-panel";
+import { CompressionHistoryRow } from "@/components/compression-history-row";
+import { QualityOption } from "@/components/quality-option";
 import { ErrorBanner, Shimmer, Spinner, btnPrimary } from "@/components/ui";
 
 const LZ_KEY = "lz";
@@ -158,28 +160,13 @@ export default function AssetPage() {
                         const key = `${algo}:${q}`;
                         const on = selected.has(key);
                         return (
-                          <label
+                          <QualityOption
                             key={key}
-                            className={clsx(
-                              "flex cursor-pointer items-center gap-1.5 rounded border px-2 py-1 text-xs transition-colors",
-                              on
-                                ? "border-accent/60 bg-accent/10 text-accent"
-                                : "border-edge hover:bg-surface-2",
-                            )}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={on}
-                              onChange={() => toggle(key)}
-                              className="accent-[var(--accent)]"
-                            />
-                            <span className="flex flex-col items-center leading-tight">
-                              <span>{q}%</span>
-                              <span className="text-[10px] text-faint">
-                                {t("record.reduced", { pct: 100 - q })}
-                              </span>
-                            </span>
-                          </label>
+                            algo={algo}
+                            quality={q}
+                            selected={on}
+                            onChange={toggle}
+                          />
                         );
                       })}
                     </div>
@@ -230,22 +217,13 @@ export default function AssetPage() {
                   </p>
                   <div className="flex flex-col gap-1.5">
                     {history.map((comp) => (
-                      <button
+                      <CompressionHistoryRow
                         key={comp.uuid}
-                        type="button"
-                        onClick={() => navigate(`/encode/${asset.uuid}/compress/${comp.uuid}`)}
-                        className="flex w-full items-center gap-3 rounded-lg border border-edge bg-surface-2/40 px-3 py-2 text-left transition-colors hover:bg-surface-2"
-                      >
-                        <FileText className="size-4 shrink-0 text-accent" aria-hidden />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-medium text-ink">
-                            {comp.variations.length} {t("encode.variations")}
-                          </span>
-                          <span className="block text-xs text-faint">
-                            {new Date(comp.createdAt).toLocaleString()}
-                          </span>
-                        </span>
-                      </button>
+                        compression={comp}
+                        onClick={() =>
+                          navigate(`/encode/${asset.uuid}/compress/${comp.uuid}`)
+                        }
+                      />
                     ))}
                   </div>
                 </div>
