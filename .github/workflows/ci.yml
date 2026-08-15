@@ -26,7 +26,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push image
+      - name: Build and push image (<sha>)
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -34,4 +34,14 @@ jobs:
           tags: ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.sha }}
           build-args: |
             VITE_APP_VERSION=${{ steps.meta.outputs.sha }}
+            VITE_FARO_COLLECTOR_URL=https://otel.dimasbaguspm.dev/v1/traces
+
+      - name: Build and push image (latest / Nightly)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
+          build-args: |
+            VITE_APP_VERSION=Nightly
             VITE_FARO_COLLECTOR_URL=https://otel.dimasbaguspm.dev/v1/traces
