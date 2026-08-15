@@ -92,7 +92,11 @@ describe("worker-client", () => {
     wc.encodeAll(new ArrayBuffer(1));
     wc.decodeInput("aGk=");
     wc.encodeSelected(new ArrayBuffer(1), []);
-    wc.downscaleImage(new ArrayBuffer(1), "image/png", { maxWidth: 100, quality: 0.7, format: "webp" });
+    wc.downscaleImage(new ArrayBuffer(1), "image/png", {
+      maxWidth: 100,
+      quality: 0.7,
+      format: "webp",
+    });
 
     const ids = captured!.posted.map((p) => (p as { id: string }).id);
     expect(ids).toEqual(["a1", "d2", "s3", "r4"]);

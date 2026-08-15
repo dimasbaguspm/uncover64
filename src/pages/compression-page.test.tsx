@@ -50,9 +50,7 @@ function compression(): CompressionRecord {
     rawSizeBytes: 1000,
     rawBase64Length: 1360,
     rawText: "",
-    variations: [
-      { algorithm: "gzip", quality: 70, byteLength: 400, base64Length: 544, ms: 5 },
-    ],
+    variations: [{ algorithm: "gzip", quality: 70, byteLength: 400, base64Length: 544, ms: 5 }],
     createdAt: 1780000000000,
   };
 }

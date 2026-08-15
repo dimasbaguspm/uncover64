@@ -49,7 +49,8 @@ describe("DecodePage", () => {
 
     const textarea = screen.getByPlaceholderText(/Paste base64, a data URI, or a JWT/);
     await user.type(textarea, "aGk=");
-    expect(decode.setInput).toHaveBeenCalledWith("a");  });
+    expect(decode.setInput).toHaveBeenCalledWith("a");
+  });
 
   it("pastes from the clipboard into the input", async () => {
     const user = userEvent.setup();

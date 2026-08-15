@@ -16,7 +16,9 @@ describe("useDecode", () => {
     const { result } = renderHook(() => useDecode(100));
     act(() => result.current.setInput("aGk="));
     expect(decode).not.toHaveBeenCalled();
-    act(() => { vi.advanceTimersByTime(100); });
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     await act(async () => {});
     expect(decode).toHaveBeenCalledOnce();
     expect(result.current.pending).toBe(false);
@@ -26,7 +28,9 @@ describe("useDecode", () => {
   it("clears result for empty input without calling decode", async () => {
     const { result } = renderHook(() => useDecode(100));
     act(() => result.current.setInput("  "));
-    act(() => { vi.advanceTimersByTime(100); });
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     expect(decode).not.toHaveBeenCalled();
     expect(result.current.result).toBeNull();
     expect(result.current.pending).toBe(false);
@@ -37,7 +41,9 @@ describe("useDecode", () => {
     const { result } = renderHook(() => useDecode(100));
     act(() => result.current.setDecompress("gzip"));
     act(() => result.current.setInput("aGk="));
-    act(() => { vi.advanceTimersByTime(100); });
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     await act(async () => {});
     expect(decode).toHaveBeenCalledWith("aGk=", "gzip");
   });

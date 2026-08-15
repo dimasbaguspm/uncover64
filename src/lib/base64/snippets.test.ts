@@ -24,7 +24,7 @@ describe("nodeSnippet", () => {
 
   it("emits an lz-string snippet for the lz algorithm", () => {
     const out = nodeSnippet("aGk=", "lz");
-    expect(out).toContain('decompressFromBase64');
+    expect(out).toContain("decompressFromBase64");
     expect(out).toContain("lz-string");
   });
 });

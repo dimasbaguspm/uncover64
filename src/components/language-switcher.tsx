@@ -50,7 +50,9 @@ export function LanguageSwitcher({ variant }: { variant: "select" | "menu" }) {
           )}
         >
           {l.label}
-          {i18n.language === l.code && <span className="size-1.5 rounded-full bg-accent" aria-hidden />}
+          {i18n.language === l.code && (
+            <span className="size-1.5 rounded-full bg-accent" aria-hidden />
+          )}
         </button>
       ))}
     </NestedMenuItem>

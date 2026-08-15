@@ -16,25 +16,28 @@ export function useAppBoot(timeoutMs = 5000): boolean {
 
   useAsyncEffect(
     async (isActive) => {
-      await tryCatch(async () => {
-        if (ANALYTICS.otelUrl) {
-          await tryCatch(() =>
-            import("@/lib/analytics/telemetry").then(({ initTelemetry }) => initTelemetry()),
-          );
-        }
-        await Promise.race([
-          initWorker(),
-          new Promise((resolve) => setTimeout(resolve, timeoutMs)),
-        ]);
-      }, {
-        onFinished: () => {
-          if (isActive()) {
-            trackEvent("page_loaded");
-            logInfo("app booted", { version: import.meta.env.VITE_APP_VERSION ?? "" });
-            setReady(true);
+      await tryCatch(
+        async () => {
+          if (ANALYTICS.otelUrl) {
+            await tryCatch(() =>
+              import("@/lib/analytics/telemetry").then(({ initTelemetry }) => initTelemetry()),
+            );
           }
+          await Promise.race([
+            initWorker(),
+            new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+          ]);
         },
-      });
+        {
+          onFinished: () => {
+            if (isActive()) {
+              trackEvent("page_loaded");
+              logInfo("app booted", { version: import.meta.env.VITE_APP_VERSION ?? "" });
+              setReady(true);
+            }
+          },
+        },
+      );
     },
     [timeoutMs],
   );

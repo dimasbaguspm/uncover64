@@ -48,9 +48,12 @@ describe("useFileDrop", () => {
     const first = vi.fn();
     const second = vi.fn();
     const file = new File(["x"], "a.txt");
-    const { rerender } = renderHook(({ handler }: { handler: (f: File) => void }) => useFileDrop(handler), {
-      initialProps: { handler: first },
-    });
+    const { rerender } = renderHook(
+      ({ handler }: { handler: (f: File) => void }) => useFileDrop(handler),
+      {
+        initialProps: { handler: first },
+      },
+    );
     rerender({ handler: second });
     act(() => fireDrag("drop", [file]));
     expect(second).toHaveBeenCalledWith(file);

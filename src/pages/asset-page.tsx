@@ -13,6 +13,7 @@ import {
 } from "@/constants/compression";
 import { formatBytes } from "@/lib/utils/format";
 import { useHistory } from "@/providers/history-provider";
+import { parseVariationKey } from "@/lib/variation";
 import { useEncoder } from "@/hooks/use-encoder";
 import { trackEvent } from "@/lib/analytics/track";
 import { SplitPane } from "@/components/split-pane";
@@ -59,8 +60,8 @@ export default function AssetPage() {
     if (key === LZ_KEY) {
       trackEvent("encode_toggle", { algo: "lz", checked });
     } else {
-      const [algo, q] = key.split(":");
-      trackEvent("encode_toggle", { algo, quality: Number(q), checked });
+      const { algorithm, quality } = parseVariationKey(key);
+      trackEvent("encode_toggle", { algo: algorithm, quality, checked });
     }
     setSelected((prev) => {
       const next = new Set(prev);
@@ -79,8 +80,8 @@ export default function AssetPage() {
     if (!asset || selected.size === 0) return;
     const selections = [...selected].map((key): { algorithm: CompressFormat; quality: number } => {
       if (key === LZ_KEY) return { algorithm: "lz", quality: QUALITY_ORIGINAL };
-      const [algo, q] = key.split(":");
-      return { algorithm: algo as CompressFormat, quality: Number(q) };
+      const { algorithm, quality } = parseVariationKey(key);
+      return { algorithm: algorithm ?? "lz", quality: quality ?? QUALITY_ORIGINAL };
     });
     const res = await encodeSelected(asset.bytes.slice().buffer, selections);
     if (!res) return;

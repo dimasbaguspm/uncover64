@@ -30,7 +30,9 @@ export function QualityOption({
       />
       <span className="flex flex-col items-center leading-tight">
         <span>{quality}%</span>
-        <span className="text-[10px] text-faint">{t("record.reduced", { pct: 100 - quality })}</span>
+        <span className="text-[10px] text-faint">
+          {t("record.reduced", { pct: 100 - quality })}
+        </span>
       </span>
     </label>
   );

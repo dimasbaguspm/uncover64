@@ -14,7 +14,14 @@ function encodeResult(): EncodeAllResult {
     rawSizeBytes: 5,
     rawBase64Length: 8,
     variations: [
-      { algorithm: "gzip", quality: 70, byteLength: 4, base64Length: 8, base64: "base64-70", ms: 5 },
+      {
+        algorithm: "gzip",
+        quality: 70,
+        byteLength: 4,
+        base64Length: 8,
+        base64: "base64-70",
+        ms: 5,
+      },
     ],
     ms: 5,
   };

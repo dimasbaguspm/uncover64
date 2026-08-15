@@ -24,7 +24,9 @@ describe("Toggle", () => {
   });
 
   it("applies an extra class name", () => {
-    const { container } = render(<Toggle value="node" options={options} onChange={vi.fn()} className="mx-2" />);
+    const { container } = render(
+      <Toggle value="node" options={options} onChange={vi.fn()} className="mx-2" />,
+    );
     expect(container.firstChild).toHaveClass("mx-2");
   });
 });

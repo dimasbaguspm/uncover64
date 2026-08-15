@@ -2,7 +2,18 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import type { FileInfo } from "@/lib/types";
-import { Badge, CodeBlock, CopyButton, ErrorBanner, Shimmer, Spinner, btn, btnActive, btnPrimary, inputCls } from "./ui";
+import {
+  Badge,
+  CodeBlock,
+  CopyButton,
+  ErrorBanner,
+  Shimmer,
+  Spinner,
+  btn,
+  btnActive,
+  btnPrimary,
+  inputCls,
+} from "./ui";
 
 function info(overrides: Partial<FileInfo> = {}): FileInfo {
   return {

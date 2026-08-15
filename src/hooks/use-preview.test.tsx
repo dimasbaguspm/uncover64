@@ -18,7 +18,12 @@ describe("usePreview", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getBase64.mockResolvedValue("aGk=");
-    decode.mockResolvedValue({ bytes: new Uint8Array([1]), info: { mime: "text/plain" }, sizeBytes: 1, text: "hi" });
+    decode.mockResolvedValue({
+      bytes: new Uint8Array([1]),
+      info: { mime: "text/plain" },
+      sizeBytes: 1,
+      text: "hi",
+    });
   });
 
   it("loads preview and export base64 for selected variation", async () => {
