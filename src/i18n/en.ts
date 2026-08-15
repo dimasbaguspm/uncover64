@@ -2,11 +2,11 @@ const en = {
   nav: {
     encode: "Encode",
     decode: "Decode",
-    diff: "Diff",
   },
   menu: {
     github: "GitHub",
     changelog: "Changelog",
+    more: "More",
   },
   changelog: {
     title: "Changelog",
@@ -99,15 +99,6 @@ const en = {
     paste: "Paste from clipboard",
     decompressed: "decompressed with {{algo}}",
     liveHint: "Start typing to preview the decoded payload.",
-  },
-  diff: {
-    placeholderA: "Paste base64 (A)…",
-    placeholderB: "Paste base64 (B)…",
-    action: "Diff",
-    wrap: "Wrap",
-    unwrap: "Unwrap",
-    fontIncrease: "Increase font size",
-    fontDecrease: "Decrease font size",
   },
   result: {
     maxWidth: "Max width",

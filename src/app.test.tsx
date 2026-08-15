@@ -58,11 +58,10 @@ describe("App", () => {
     await renderApp();
     expect(screen.getByRole("link", { name: "Encode" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Decode" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Diff" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Saved history" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Changelog" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "GitHub" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Feedback" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Feedback" }).length).toBeGreaterThan(0);
   });
 
   it("shows the upload-first encode landing", async () => {
@@ -70,16 +69,13 @@ describe("App", () => {
     expect(screen.getByText("Drop a file to encode it as base64")).toBeInTheDocument();
   });
 
-  it("navigates to decode editor and diff page", async () => {
+  it("navigates to the decode editor", async () => {
     const user = userEvent.setup();
     await renderApp();
 
     await user.click(screen.getByRole("link", { name: "Decode" }));
     expect(screen.getByPlaceholderText(/Paste base64, a data URI/i)).toBeInTheDocument();
     expect(screen.getByText(/Start typing to preview/i)).toBeInTheDocument();
-
-    await user.click(screen.getByRole("link", { name: "Diff" }));
-    expect(screen.getByPlaceholderText(/Paste base64 \(A\)/i)).toBeInTheDocument();
   });
 
   it("opens saved history drawer with empty state", async () => {

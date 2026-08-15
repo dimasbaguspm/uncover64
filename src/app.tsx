@@ -1,33 +1,42 @@
 import { clsx } from "clsx";
-import { Bookmark, Globe, History, MessageSquareText, Moon, Sun } from "lucide-react";
-import { useEffect, type ComponentType } from "react";
+import {
+  Bookmark,
+  Globe,
+  History,
+  MessageSquareText,
+  Moon,
+  MoreVertical,
+  Star,
+  Sun,
+} from "lucide-react";
+import { useEffect, useState, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
-import EncodePage from "./pages/encode";
-import AssetPage from "./pages/asset-page";
-import CompressionPage from "./pages/compression-page";
-import DecodePage from "./pages/decode";
-import DiffPage from "./pages/diff";
-import { WorkerProvider, useWorker } from "./providers/worker-provider";
-import { HistoryProvider } from "./providers/history-provider";
-import { AppProvider } from "./providers/app-provider";
-import { ROUTES } from "./constants/routes";
-import { CHANGELOG } from "./constants/changelog";
-import { FEEDBACK_URL, GITHUB_URL } from "./constants/misc";
-import "./i18n";
-import { LANGUAGES, setLocale } from "./i18n";
-import { useTheme } from "./hooks/use-theme";
-import { useQueryParam } from "./hooks/use-query-param";
-import { trackEvent } from "./lib/analytics/track";
 import { Drawer } from "./components/drawer";
+import { DropdownMenu, MenuItem, NestedMenuItem } from "./components/dropdown-menu";
 import { ErrorBoundary } from "./components/error-boundary";
 import { HistoryDrawer } from "./components/history-drawer";
 import { GithubIcon } from "./components/icons/github-icon";
+import { CHANGELOG } from "./constants/changelog";
+import { FEEDBACK_URL, GITHUB_URL } from "./constants/misc";
+import { ROUTES } from "./constants/routes";
+import { useGithubStars } from "./hooks/use-github-stars";
+import { useQueryParam } from "./hooks/use-query-param";
+import { useTheme } from "./hooks/use-theme";
+import "./i18n";
+import { LANGUAGES, setLocale } from "./i18n";
+import { trackEvent } from "./lib/analytics/track";
+import AssetPage from "./pages/asset-page";
+import CompressionPage from "./pages/compression-page";
+import DecodePage from "./pages/decode";
+import EncodePage from "./pages/encode";
+import { AppProvider } from "./providers/app-provider";
+import { HistoryProvider } from "./providers/history-provider";
+import { useWorker, WorkerProvider } from "./providers/worker-provider";
 
 const TAB_COMPONENTS: Record<string, ComponentType> = {
   "/": EncodePage,
   "/decode": DecodePage,
-  "/diff": DiffPage,
 };
 
 function NavLinks() {
@@ -72,7 +81,9 @@ function Shell() {
   const { t, i18n } = useTranslation();
   const { theme, toggle } = useTheme();
   const [drawer, setDrawer] = useQueryParam("drawer");
+  const [langOpen, setLangOpen] = useState(false);
   const version = import.meta.env.VITE_APP_VERSION;
+  const stars = useGithubStars();
 
   // Product events → analytics provider (via the trackEvent abstraction).
   useEffect(() => {
@@ -104,7 +115,7 @@ function Shell() {
   return (
     <>
       <div className="flex h-screen flex-col supports-[height:100dvh]:h-dvh">
-        <header className="z-30 shrink-0 border-b border-edge bg-canvas/90 backdrop-blur">
+        <header className="relative z-30 shrink-0 border-b border-edge bg-canvas/90 backdrop-blur">
           <div className="flex items-center gap-1 px-2 py-1">
             <NavLinks />
 
@@ -115,31 +126,52 @@ function Shell() {
                 rel="noreferrer"
                 aria-label={t("menu.github")}
                 title={t("menu.github")}
-                className="rounded p-1.5 text-dim transition-colors hover:bg-surface-2 hover:text-ink"
+                className="flex items-center gap-1.5 rounded-full border border-edge bg-surface-2/50 px-2 py-1 text-dim transition-colors hover:border-edge-strong hover:bg-surface-2 hover:text-ink"
               >
-                <GithubIcon size={16} />
+                <GithubIcon size={14} />
+                {stars !== null && (
+                  <span className="flex items-center gap-1 text-xs font-medium tabular-nums">
+                    <Star
+                      className="size-3 text-[var(--tint-amber-fg)]"
+                      fill="currentColor"
+                      aria-hidden
+                    />
+                    {stars >= 1000 ? `${(stars / 1000).toFixed(1)}k` : stars}
+                  </span>
+                )}
               </a>
               <button
                 type="button"
                 onClick={() => setDrawer("changelog")}
                 aria-label={t("menu.changelog")}
                 title={t("menu.changelog")}
-                className="rounded p-1.5 text-dim transition-colors hover:bg-surface-2 hover:text-ink"
+                className="hidden rounded p-1.5 text-dim transition-colors hover:bg-surface-2 hover:text-ink sm:flex"
               >
                 <History className="size-4" aria-hidden />
               </button>
               {version ? (
-                <span className="ml-1 rounded border border-edge px-1.5 py-0.5 font-mono text-[10px] text-faint">
+                <span className="ml-1 hidden items-center rounded border border-edge px-1.5 py-0.5 font-mono text-[10px] text-faint sm:inline-flex">
                   {version}
                 </span>
               ) : (
-                <span
-                  className="ml-1 rounded border border-dashed border-accent/40 px-1.5 py-0.5 font-mono text-[10px] text-accent"
-                  title="VITE_APP_VERSION"
-                >
+                <span className="ml-1 hidden items-center rounded border border-dashed border-accent/40 px-1.5 py-0.5 font-mono text-[10px] text-accent sm:inline-flex">
                   {t("footer.devMode")}
                 </span>
               )}
+              <div className="sm:hidden">
+                <DropdownMenu
+                  label={t("menu.more")}
+                  trigger={<MoreVertical className="size-4" aria-hidden />}
+                >
+                  <MenuItem onClick={() => setDrawer("changelog")}>
+                    <History className="size-4 text-dim" aria-hidden />
+                    {t("menu.changelog")}
+                  </MenuItem>
+                  <div className="px-2 py-1.5 font-mono text-[10px] text-faint">
+                    {version ?? t("footer.devMode")}
+                  </div>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         </header>
@@ -169,9 +201,9 @@ function Shell() {
           </Routes>
         </main>
 
-        <footer className="shrink-0 border-t border-edge">
-          <div className="flex items-center justify-between gap-3 px-3 py-1">
-            <div className="flex items-center gap-0.5">
+        <footer className="relative z-30 shrink-0 border-t border-edge">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-3 py-1">
+            <div className="flex items-center justify-start gap-0.5">
               <button
                 type="button"
                 onClick={() => setDrawer("history")}
@@ -183,7 +215,17 @@ function Shell() {
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
+            <a
+              href="https://uncover64.dimasbaguspm.com"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-dim transition-colors hover:bg-surface-2 hover:text-ink"
+            >
+              <span className="hidden sm:inline">uncover64.dimasbaguspm.com</span>
+              <span className="sm:hidden">uncover64</span>
+            </a>
+
+            <div className="flex items-center justify-end gap-1 sm:gap-3">
               <button
                 type="button"
                 onClick={toggle}
@@ -198,7 +240,7 @@ function Shell() {
                 )}
               </button>
 
-              <label className="flex items-center gap-1.5" title={t("footer.language")}>
+              <label className="hidden items-center gap-1.5 sm:flex" title={t("footer.language")}>
                 <Globe className="size-4 text-dim" aria-hidden />
                 <select
                   value={i18n.language}
@@ -218,11 +260,49 @@ function Shell() {
                 href={FEEDBACK_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-1.5 text-xs font-medium text-accent transition-colors hover:text-accent-strong"
+                className="hidden items-center gap-1.5 text-xs font-medium text-accent transition-colors hover:text-accent-strong sm:flex"
               >
                 <MessageSquareText className="size-4" aria-hidden />
                 {t("footer.feedback")}
               </a>
+              <div className="sm:hidden">
+                <DropdownMenu
+                  label={t("menu.more")}
+                  trigger={<MoreVertical className="size-4" aria-hidden />}
+                  side="top"
+                >
+                  <NestedMenuItem label={t("footer.language")} open={langOpen} onOpen={setLangOpen}>
+                    {LANGUAGES.map((l) => (
+                      <button
+                        key={l.code}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => setLocale(l.code)}
+                        className={clsx(
+                          "flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors",
+                          i18n.language === l.code ? "text-accent" : "text-ink hover:bg-surface-2",
+                        )}
+                      >
+                        {l.label}
+                        {i18n.language === l.code && (
+                          <span className="size-1.5 rounded-full bg-accent" aria-hidden />
+                        )}
+                      </button>
+                    ))}
+                  </NestedMenuItem>
+                  <div className="my-1 h-px bg-edge" />
+                  <a
+                    href={FEEDBACK_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    role="menuitem"
+                    className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-ink transition-colors hover:bg-surface-2"
+                  >
+                    <MessageSquareText className="size-4 text-dim" aria-hidden />
+                    {t("footer.feedback")}
+                  </a>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         </footer>

@@ -2,11 +2,11 @@ const id = {
   nav: {
     encode: "Enkode",
     decode: "Dekode",
-    diff: "Banding",
   },
   menu: {
     github: "GitHub",
     changelog: "Catatan perubahan",
+    more: "Lainnya",
   },
   changelog: {
     title: "Catatan perubahan",
@@ -98,15 +98,6 @@ const id = {
     paste: "Tempel dari clipboard",
     decompressed: "didekompresi dengan {{algo}}",
     liveHint: "Mulai mengetik untuk melihat pratinjau payload yang didekode.",
-  },
-  diff: {
-    placeholderA: "Tempel base64 (A)…",
-    placeholderB: "Tempel base64 (B)…",
-    action: "Banding",
-    wrap: "Bungkus",
-    unwrap: "Luruskan",
-    fontIncrease: "Perbesar teks",
-    fontDecrease: "Perkecil teks",
   },
   result: {
     optimize: "Optimalkan & enkode ulang",
