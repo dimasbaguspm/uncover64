@@ -6,6 +6,7 @@ import type {
   DownscaleResult,
   EncodeAllResult,
   EncodeSelection,
+  FileInfo,
   JwtParts,
   Variation,
 } from "./types";
@@ -141,6 +142,51 @@ async function decompressBytes(bytes: Uint8Array, algo: CompressFormat): Promise
     new DecompressionStream(algo) as unknown as TransformStream<Uint8Array, Uint8Array>,
     bytes,
   );
+}
+
+function isPlainText(detected: FileInfo): boolean {
+  return detected.kind === "text" || detected.kind === "json" || detected.kind === "jwt";
+}
+
+/**
+ * Auto-detect compression. Fast magic-byte paths (gzip, zlib/deflate) come
+ * first; the remaining algorithms are probed. gzip/deflate/deflate-raw
+ * (DecompressionStream) and brotli (wasm) fail loudly on mismatched input, so
+ * "no throw + non-empty" is a reliable signal. lz-string is lenient (returns
+ * empty/garbage instead of throwing), so its output must also be valid UTF-8.
+ */
+async function autoDetectCompression(
+  bytes: Uint8Array,
+): Promise<{ algo: CompressFormat; bytes: Uint8Array } | null> {
+  const tryOne = async (algo: CompressFormat): Promise<Uint8Array | null> => {
+    try {
+      const out = await decompressBytes(bytes, algo);
+      if (out.length === 0) return null;
+      if (algo === "lz" && utf8Decode(out) === null) return null;
+      return out;
+    } catch {
+      return null;
+    }
+  };
+
+  if (bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b) {
+    const out = await tryOne("gzip");
+    return out ? { algo: "gzip", bytes: out } : null;
+  }
+  if (
+    bytes.length >= 2 &&
+    (bytes[0] & 0x0f) === 8 && // CMF low nibble: deflate method
+    ((bytes[0] << 8) + bytes[1]) % 31 === 0 // header checksum
+  ) {
+    const out = await tryOne("deflate");
+    if (out) return { algo: "deflate", bytes: out };
+  }
+
+  for (const algo of ["deflate", "deflate-raw", "brotli", "lz"] as const) {
+    const out = await tryOne(algo);
+    if (out) return { algo, bytes: out };
+  }
+  return null;
 }
 
 const ALL_ALGOS: CompressFormat[] = ["gzip", "deflate", "deflate-raw", "brotli"];
@@ -298,26 +344,21 @@ export async function opDecode(
   const bytes = base64ToBytes(b64);
   let detected = detect(bytes);
 
-  let algo: CompressFormat | null = null;
-  if (decompress === "auto" && detected.kind === "gzip") {
-    algo = "gzip";
-  } else if (decompress === "auto" && detected.kind === "binary") {
-    try {
-      const out = await brotliDecompress(bytes);
-      if (out.length > 0 && utf8Decode(out) !== null) algo = "brotli";
-    } catch {
-      /* not brotli */
-    }
-  } else if (decompress && decompress !== "auto") {
-    algo = decompress;
-  }
-
   let finalBytes = bytes;
   let decompressed: CompressFormat | undefined;
-  if (algo) {
+  if (decompress === "auto") {
+    if (!isPlainText(detected)) {
+      const hit = await autoDetectCompression(bytes);
+      if (hit) {
+        finalBytes = hit.bytes;
+        decompressed = hit.algo;
+        detected = detect(finalBytes);
+      }
+    }
+  } else if (decompress) {
     try {
-      finalBytes = await decompressBytes(bytes, algo);
-      decompressed = algo;
+      finalBytes = await decompressBytes(bytes, decompress);
+      decompressed = decompress;
       detected = detect(finalBytes);
     } catch {
       decompressed = undefined;

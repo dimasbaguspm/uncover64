@@ -3,6 +3,8 @@ import { logError } from "../analytics/otel";
 export interface TryCatchCallbacks<T> {
   /** Default true — send caught errors to OTEL. Set false for graceful/noise-free skips. */
   log?: boolean;
+  /** Descriptive message recorded in the OTEL log. Defaults to "Operation failed". */
+  message?: string;
   onError?: (err: unknown) => void;
   onFinished?: (data: T | null, err: unknown) => void;
   onSuccess?: (data: T) => void;
@@ -29,7 +31,7 @@ export async function tryCatch<T>(
     callbacks.onSuccess?.(data);
   } catch (e) {
     err = e;
-    if (callbacks.log !== false) void logError(e, "Operation failed");
+    if (callbacks.log !== false) void logError(e, callbacks.message ?? "Operation failed");
     callbacks.onError?.(e);
   } finally {
     callbacks.onFinished?.(data, err);

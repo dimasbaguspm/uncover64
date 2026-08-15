@@ -96,6 +96,34 @@ describe("opEncodeAll", () => {
     expect(decoded.text).toBe("compressed roundtrip");
   });
 
+  it.each(["deflate", "deflate-raw", "brotli"] as const)(
+    "auto-detects and decompresses %s",
+    async (algo) => {
+      const text = `${algo} auto detect `.repeat(100);
+      const res = await opEncodeAll(utf8Encode(text));
+      const v = res.variations.find((x) => x.algorithm === algo && x.quality === 50)!;
+      expect(v.byteLength).toBeLessThan(res.rawSizeBytes);
+      const decoded = await opDecode(v.base64, "auto");
+      expect(decoded.decompressed).toBe(algo);
+      expect(decoded.text).toBe(text);
+    },
+  );
+
+  it("auto-detects and decompresses lz-string", async () => {
+    const text = "lz auto detect ".repeat(100);
+    const res = await opEncodeAll(utf8Encode(text));
+    const lz = res.variations.find((v) => v.algorithm === "lz")!;
+    const decoded = await opDecode(lz.base64, "auto");
+    expect(decoded.decompressed).toBe("lz");
+    expect(decoded.text).toBe(text);
+  });
+
+  it("leaves plain text untouched under auto detection", async () => {
+    const decoded = await opDecode(bytesToBase64(utf8Encode('{"hello":"world"}')), "auto");
+    expect(decoded.decompressed).toBeUndefined();
+    expect(decoded.info.kind).toBe("json");
+  });
+
   it("keeps payload compressed when decompress is off", async () => {
     const res = await opEncodeAll(utf8Encode("stay compressed"));
     const gzip = res.variations.find((v) => v.algorithm === "gzip")!;

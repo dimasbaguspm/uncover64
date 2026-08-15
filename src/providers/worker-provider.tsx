@@ -35,17 +35,21 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const run = useCallback(async <T,>(fn: () => Promise<T>, event?: string): Promise<T | null> => {
-    setBusy(true);
-    setError(null);
-    return tryCatch(fn, {
-      onSuccess: () => {
-        if (event) void trackEvent(event);
-      },
-      onError: (err) => setError(toErrorMessage(err)),
-      onFinished: () => setBusy(false),
-    });
-  }, []);
+  const run = useCallback(
+    async <T,>(fn: () => Promise<T>, event?: string, message?: string): Promise<T | null> => {
+      setBusy(true);
+      setError(null);
+      return tryCatch(fn, {
+        message,
+        onSuccess: () => {
+          if (event) void trackEvent(event);
+        },
+        onError: (err) => setError(toErrorMessage(err)),
+        onFinished: () => setBusy(false),
+      });
+    },
+    [],
+  );
 
   const clearError = useCallback(() => setError(null), []);
   const encodeAll = useCallback(
@@ -59,7 +63,7 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
   );
   const decode = useCallback(
     (input: string, decompress: DecompressOption = "auto") =>
-      run(() => worker.decodeInput(input, decompress), "decode"),
+      run(() => worker.decodeInput(input, decompress), "decode", "Decode failed"),
     [run],
   );
   const downscale = useCallback(
