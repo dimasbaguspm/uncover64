@@ -33,7 +33,6 @@ import DecodePage from "@/pages/decode";
 import EncodePage from "@/pages/encode";
 import { AppProvider } from "@/providers/app-provider";
 import { HistoryProvider } from "@/providers/history-provider";
-import { useWorker, WorkerProvider } from "@/providers/worker-provider";
 
 const TAB_COMPONENTS: Record<string, ComponentType> = {
   "/": EncodePage,
@@ -68,15 +67,6 @@ function NavLinks() {
       })}
     </nav>
   );
-}
-
-function RouteErrorReset() {
-  const location = useLocation();
-  const { clearError } = useWorker();
-  useEffect(() => {
-    clearError();
-  }, [location.pathname, clearError]);
-  return null;
 }
 
 function RouteTracker() {
@@ -375,15 +365,12 @@ function Shell() {
 export default function App() {
   return (
     <AppProvider>
-      <WorkerProvider>
-        <HistoryProvider>
-          <BrowserRouter>
-            <RouteErrorReset />
-            <RouteTracker />
-            <Shell />
-          </BrowserRouter>
-        </HistoryProvider>
-      </WorkerProvider>
+      <HistoryProvider>
+        <BrowserRouter>
+          <RouteTracker />
+          <Shell />
+        </BrowserRouter>
+      </HistoryProvider>
     </AppProvider>
   );
 }

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type ClipboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { DecodeResult, DecompressOption } from "@/lib/types";
 import { DECOMPRESS_OPTIONS } from "@/constants/compression";
-import { useWorker } from "@/providers/worker-provider";
+import { useEncoder } from "@/hooks/use-encoder";
 import { SplitPane } from "@/components/split-pane";
 import { PreviewPanel } from "@/components/preview-panel";
 import { ErrorBanner, Shimmer } from "@/components/ui";
@@ -21,7 +21,7 @@ export default function DecodePage() {
   const [decompress, setDecompress] = useState<DecompressOption>("auto");
   const [result, setResult] = useState<DecodeResult | null>(null);
   const [pending, setPending] = useState(false);
-  const { decode, error } = useWorker();
+  const { decode, error } = useEncoder();
 
   const decodeRef = useRef(decode);
   decodeRef.current = decode;

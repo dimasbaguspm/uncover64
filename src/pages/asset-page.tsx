@@ -13,7 +13,7 @@ import {
 } from "@/constants/compression";
 import { formatBytes } from "@/lib/utils/format";
 import { useHistory } from "@/providers/history-provider";
-import { useWorker } from "@/providers/worker-provider";
+import { useEncoder } from "@/hooks/use-encoder";
 import { trackEvent } from "@/lib/analytics/track";
 import { SplitPane } from "@/components/split-pane";
 import { PaneHeader } from "@/components/pane-header";
@@ -32,7 +32,7 @@ export default function AssetPage() {
   const navigate = useNavigate();
   const { assetId } = useParams<{ assetId: string }>();
   const { getAsset, compressionsForAsset, addCompression, ready } = useHistory();
-  const { encodeSelected, busy, error } = useWorker();
+  const { encodeSelected, busy, error } = useEncoder();
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const asset = getAsset(assetId ?? "");

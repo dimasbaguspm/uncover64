@@ -9,7 +9,7 @@ import {
   QUALITY_MIN,
   QUALITY_STEP,
 } from "@/constants/image";
-import { useWorker } from "@/providers/worker-provider";
+import { useEncoder } from "@/hooks/use-encoder";
 import { formatBytes, prettyJson, savingsPercent } from "@/lib/utils/format";
 import { createObjectUrl, downloadBlob, revokeObjectUrl } from "@/lib/utils/download";
 import { ExportBar } from "./export-bar";
@@ -31,7 +31,7 @@ function ImageOptimizer({
   const [quality, setQuality] = useState(IMAGE_DEFAULTS.quality);
   const [format, setFormat] = useState<"jpeg" | "webp">(IMAGE_DEFAULTS.format);
   const [down, setDown] = useState<DownscaleResult | null>(null);
-  const { downscale, busy, error } = useWorker();
+  const { downscale, busy, error } = useEncoder();
 
   const previewUrl = useMemo(() => (down ? createObjectUrl(down.bytes, down.mime) : null), [down]);
   useEffect(() => {

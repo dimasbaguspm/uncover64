@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useHistory } from "@/providers/history-provider";
-import { useWorker } from "@/providers/worker-provider";
+import { useEncoder } from "@/hooks/use-encoder";
 import { trackEvent } from "@/lib/analytics/track";
 import { formatBytes } from "@/lib/utils/format";
 import { sort } from "radash";
@@ -19,7 +19,7 @@ export default function CompressionPage() {
   const navigate = useNavigate();
   const { assetId, compressionId } = useParams<{ assetId: string; compressionId: string }>();
   const { getAsset, getCompression, getBase64, ready } = useHistory();
-  const { decode } = useWorker();
+  const { decode } = useEncoder();
   const [selectedId, setSelectedId] = useState("raw");
   const [exportBase64, setExportBase64] = useState<string | null>(null);
   const [base64Loading, setBase64Loading] = useState(false);
