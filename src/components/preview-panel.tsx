@@ -4,6 +4,7 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { CompressFormat, FileInfo } from "@/lib/types";
 import { formatBytes } from "@/lib/utils/format";
+import { createObjectUrl, revokeObjectUrl } from "@/lib/utils/download";
 import { trackEvent } from "@/lib/analytics/track";
 import { Badge } from "./ui";
 
@@ -44,15 +45,12 @@ export const PreviewPanel = memo(function PreviewPanel({
   const [fit, setFit] = useState(false);
 
   const url = useMemo(
-    () =>
-      bytes.length
-        ? URL.createObjectURL(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: info.mime }))
-        : null,
+    () => (bytes.length ? createObjectUrl(bytes, info.mime) : null),
     [bytes, info.mime],
   );
   useEffect(() => {
     return () => {
-      if (url) URL.revokeObjectURL(url);
+      if (url) revokeObjectUrl(url);
     };
   }, [url]);
 
@@ -67,9 +65,7 @@ export const PreviewPanel = memo(function PreviewPanel({
 
   const openInTab = () => {
     if (bytes.length === 0) return;
-    const tabUrl = URL.createObjectURL(
-      new Blob([bytes as Uint8Array<ArrayBuffer>], { type: info.mime }),
-    );
+    const tabUrl = createObjectUrl(bytes, info.mime);
     const a = document.createElement("a");
     a.href = tabUrl;
     a.target = "_blank";
@@ -77,7 +73,7 @@ export const PreviewPanel = memo(function PreviewPanel({
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(() => URL.revokeObjectURL(tabUrl), 60_000);
+    setTimeout(() => revokeObjectUrl(tabUrl), 60_000);
   };
 
   const toggleFullscreen = () => onFullscreen?.();

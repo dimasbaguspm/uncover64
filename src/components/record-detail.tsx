@@ -8,6 +8,7 @@ import { COMPRESSION_LABELS, QUALITY_ORIGINAL } from "@/constants/compression";
 import type { CompressionRecord } from "@/lib/db";
 import type { CompressFormat } from "@/lib/types";
 import { formatBytes, savingsPercent } from "@/lib/utils/format";
+import { downloadBase64 } from "@/lib/utils/download";
 import { variationKey } from "@/lib/variation";
 import { trackEvent } from "@/lib/analytics/track";
 import { CopyButton, Spinner } from "./ui";
@@ -20,16 +21,6 @@ export interface VariationOption {
   byteLength: number;
   base64Length: number;
   ms?: number;
-}
-
-function downloadBase64(name: string, base64: string) {
-  const blob = new Blob([base64], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function downloadName(record: CompressionRecord, row: VariationOption): string {

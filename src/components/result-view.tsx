@@ -11,17 +11,9 @@ import {
 } from "@/constants/image";
 import { useWorker } from "@/providers/worker-provider";
 import { formatBytes, prettyJson, savingsPercent } from "@/lib/utils/format";
+import { createObjectUrl, downloadBlob, revokeObjectUrl } from "@/lib/utils/download";
 import { ExportBar } from "./export-bar";
 import { Badge, CodeBlock, CopyButton, ErrorBanner, Spinner, btn, btnPrimary } from "./ui";
-
-function downloadBlob(bytes: Uint8Array, mime: string, filename: string) {
-  const url = URL.createObjectURL(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: mime }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 function ImageOptimizer({
   bytes,
@@ -41,20 +33,10 @@ function ImageOptimizer({
   const [down, setDown] = useState<DownscaleResult | null>(null);
   const { downscale, busy, error } = useWorker();
 
-  const previewUrl = useMemo(
-    () =>
-      down
-        ? URL.createObjectURL(
-            new Blob([down.bytes as Uint8Array<ArrayBuffer>], {
-              type: down.mime,
-            }),
-          )
-        : null,
-    [down],
-  );
+  const previewUrl = useMemo(() => (down ? createObjectUrl(down.bytes, down.mime) : null), [down]);
   useEffect(() => {
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (previewUrl) revokeObjectUrl(previewUrl);
     };
   }, [previewUrl]);
 
@@ -171,19 +153,12 @@ export function ResultView({
   const [pretty, setPretty] = useState(true);
 
   const url = useMemo(
-    () =>
-      result.bytes.length
-        ? URL.createObjectURL(
-            new Blob([result.bytes as Uint8Array<ArrayBuffer>], {
-              type: result.info.mime,
-            }),
-          )
-        : null,
+    () => (result.bytes.length ? createObjectUrl(result.bytes, result.info.mime) : null),
     [result],
   );
   useEffect(() => {
     return () => {
-      if (url) URL.revokeObjectURL(url);
+      if (url) revokeObjectUrl(url);
     };
   }, [url]);
 
