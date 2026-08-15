@@ -54,7 +54,7 @@ export function useFileDrop(onFile: (file: File) => void) {
       window.removeEventListener("dragleave", onDragLeave);
       window.removeEventListener("drop", onDrop);
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return isDragging;
 }

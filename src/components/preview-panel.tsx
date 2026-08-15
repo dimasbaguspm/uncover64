@@ -1,8 +1,9 @@
 import { clsx } from "clsx";
 import { ExternalLink, Frame, Fullscreen, ZoomIn, ZoomOut } from "lucide-react";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { CompressFormat, FileInfo } from "@/lib/types";
+import { useObjectUrl } from "@/hooks/use-object-url";
 import { formatBytes } from "@/lib/utils/format";
 import { createObjectUrl, revokeObjectUrl } from "@/lib/utils/download";
 import { trackEvent } from "@/lib/analytics/track";
@@ -44,15 +45,7 @@ export const PreviewPanel = memo(function PreviewPanel({
   const [zoom, setZoom] = useState(1);
   const [fit, setFit] = useState(false);
 
-  const url = useMemo(
-    () => (bytes.length ? createObjectUrl(bytes, info.mime) : null),
-    [bytes, info.mime],
-  );
-  useEffect(() => {
-    return () => {
-      if (url) revokeObjectUrl(url);
-    };
-  }, [url]);
+  const url = useObjectUrl(bytes.length ? bytes : null, info.mime);
 
   const mime = info.mime;
   const isImage = mime.startsWith("image/");

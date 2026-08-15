@@ -208,6 +208,7 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
   return <HistoryContext.Provider value={value}>{children}</HistoryContext.Provider>;
 }
 
+// eslint-disable-next-line react/only-export-components -- provider + consumer hook in one module
 export function useHistory(): HistoryContextValue {
   const ctx = useContext(HistoryContext);
   if (!ctx) throw new Error("useHistory must be used within a HistoryProvider");

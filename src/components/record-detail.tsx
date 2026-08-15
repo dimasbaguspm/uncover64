@@ -29,6 +29,7 @@ function downloadName(record: CompressionRecord, row: VariationOption): string {
   return `${parts.join("_")}.b64`;
 }
 
+// eslint-disable-next-line react/only-export-components -- pure helper shared with compression-page
 export function recordVariations(record: CompressionRecord, t: TFunction): VariationOption[] {
   return [
     {
@@ -94,7 +95,10 @@ export const RecordDetail = memo(function RecordDetail({
   }, [rows, sortKey, asc]);
 
   const bestId = useMemo(() => {
-    const best = sort(rows.filter((r) => r.algorithm), (r) => r.byteLength)[0];
+    const best = sort(
+      rows.filter((r) => r.algorithm),
+      (r) => r.byteLength,
+    )[0];
     return best?.id ?? null;
   }, [rows]);
 
