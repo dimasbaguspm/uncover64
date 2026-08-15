@@ -25,10 +25,10 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["uncover64.svg"],
       manifest: {
-        name: "Uncover64 — Zero-Knowledge Base64 Toolkit",
+        name: "Uncover64",
         short_name: "Uncover64",
         description:
-          "Encode, decode, compress, and inspect base64 entirely in your browser. Your data never leaves your machine.",
+          "Zero-Knowledge Base64 Toolkit: Your data never leaves your machine",
         theme_color: "#131d17",
         background_color: "#131d17",
         display: "standalone",

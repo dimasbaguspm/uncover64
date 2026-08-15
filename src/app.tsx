@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import { Bookmark, Globe, History, Lightbulb, MessageSquareText, Moon, Sun } from "lucide-react";
-import { useEffect, type ComponentType } from "react";
+import { useEffect, useRef, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import EncodePage from "./pages/encode";
@@ -17,6 +17,7 @@ import "./i18n";
 import { LANGUAGES, setLocale } from "./i18n";
 import { useTheme } from "./hooks/use-theme";
 import { useQueryParam } from "./hooks/use-query-param";
+import { sendOtlpLog } from "./lib/analytics/otel";
 import { Drawer } from "./components/drawer";
 import { TipsModal } from "./components/tips-modal";
 import { HistoryDrawer } from "./components/history-drawer";
@@ -73,6 +74,42 @@ function Shell() {
   const [modal, setModal] = useQueryParam("modal");
   const version = import.meta.env.VITE_APP_VERSION;
 
+  // Telemetry: route navigation, clicks on interactive elements, and pastes.
+  const location = useLocation();
+  const lastPathRef = useRef(location.pathname);
+  useEffect(() => {
+    if (lastPathRef.current !== location.pathname) {
+      void sendOtlpLog("navigate", "info", { path: location.pathname });
+      lastPathRef.current = location.pathname;
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    let lastClick = 0;
+    const onClick = (e: MouseEvent) => {
+      const now = Date.now();
+      if (now - lastClick < 500) return;
+      lastClick = now;
+      const el = (e.target as HTMLElement | null)?.closest?.("button, a") as HTMLElement | null;
+      if (!el) return;
+      void sendOtlpLog("click", "info", {
+        tag: el.tagName.toLowerCase(),
+        text: (el.textContent ?? "").trim().slice(0, 60),
+      });
+    };
+    const onPaste = (e: ClipboardEvent) => {
+      void sendOtlpLog("paste", "info", {
+        length: (e.clipboardData?.getData("text") ?? "").length,
+      });
+    };
+    window.addEventListener("click", onClick);
+    document.addEventListener("paste", onPaste);
+    return () => {
+      window.removeEventListener("click", onClick);
+      document.removeEventListener("paste", onPaste);
+    };
+  }, []);
+
   return (
     <>
       <div className="flex h-screen flex-col supports-[height:100dvh]:h-dvh">
@@ -102,7 +139,7 @@ function Shell() {
               </button>
               {version ? (
                 <span className="ml-1 rounded border border-edge px-1.5 py-0.5 font-mono text-[10px] text-faint">
-                  v{version}
+                  {version}
                 </span>
               ) : (
                 <span
@@ -224,7 +261,7 @@ function Shell() {
 
 export default function App() {
   useEffect(() => {
-    if (ANALYTICS.faroCollectorUrl) {
+    if (ANALYTICS.otelUrl) {
       void import("./lib/analytics/faro").then(({ initFaro }) => initFaro());
     }
   }, []);
