@@ -47,7 +47,7 @@ async function seedCompression() {
   return { assetUuid, compUuid };
 }
 
-/** Render the app and wait for the AppProvider splash to clear. */
+/** Render the app and wait for the boot splash to clear. */
 async function renderApp() {
   render(<App />);
   await screen.findByRole("link", { name: "Encode" });

@@ -9,7 +9,7 @@ import {
   Star,
   Sun,
 } from "lucide-react";
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { Drawer } from "@/components/drawer";
@@ -20,18 +20,17 @@ import { GithubIcon } from "@/components/icons/github-icon";
 import { CHANGELOG } from "@/constants/changelog";
 import { FEEDBACK_URL, GITHUB_URL } from "@/constants/misc";
 import { ROUTES } from "@/constants/routes";
+import { useAppBoot } from "@/hooks/use-app-boot";
 import { useGithubStars } from "@/hooks/use-github-stars";
+import { useNavigationTrace } from "@/hooks/use-navigation-trace";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useTheme } from "@/hooks/use-theme";
 import { LANGUAGES, setLocale } from "@/i18n";
 import { trackEvent } from "@/lib/analytics/track";
-import { logInfo, currentTrace } from "@/lib/analytics/otel";
-import { maskUrl } from "@/lib/utils/mask";
 import AssetPage from "@/pages/asset-page";
 import CompressionPage from "@/pages/compression-page";
 import DecodePage from "@/pages/decode";
 import EncodePage from "@/pages/encode";
-import { AppProvider } from "@/providers/app-provider";
 import { HistoryProvider } from "@/providers/history-provider";
 
 const TAB_COMPONENTS: Record<string, ComponentType> = {
@@ -70,28 +69,9 @@ function NavLinks() {
 }
 
 function RouteTracker() {
-  const location = useLocation();
-  const prevRef = useRef(location.pathname);
-  useEffect(() => {
-    const prev = prevRef.current;
-    prevRef.current = location.pathname;
-    if (prev === location.pathname) return;
-    const masked = maskUrl(location.pathname);
-    const trace = lastNavTrace;
-    lastNavTrace = null;
-    trackEvent("page_navigate", { path: masked });
-    logInfo("page navigate", {
-      path: masked,
-      traceId: trace?.traceId ?? "",
-      spanId: trace?.spanId ?? "",
-    });
-  }, [location.pathname]);
+  useNavigationTrace();
   return null;
 }
-
-// The click span is already ended when the navigation effect runs, so capture
-// the active trace at click time and attach it to the navigate log.
-let lastNavTrace: { traceId: string; spanId: string } | null = null;
 
 function Shell() {
   const { t, i18n } = useTranslation();
@@ -112,15 +92,6 @@ function Shell() {
     return () => {
       document.removeEventListener("paste", onPaste);
     };
-  }, []);
-
-  // Capture the active click span so route changes can be correlated.
-  useEffect(() => {
-    const onCapture = () => {
-      lastNavTrace = currentTrace();
-    };
-    document.addEventListener("click", onCapture, true);
-    return () => document.removeEventListener("click", onCapture, true);
   }, []);
 
   return (
@@ -363,15 +334,25 @@ function Shell() {
 }
 
 export default function App() {
+  const ready = useAppBoot();
+  if (!ready) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-canvas">
+        <div className="flex flex-col items-center gap-4">
+          <img src="/uncover64.svg" alt="" className="size-14" />
+          <span className="inline-block size-5 animate-spin rounded-full border-2 border-edge border-t-accent" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <AppProvider>
-      <HistoryProvider>
-        <BrowserRouter>
-          <RouteTracker />
-          <Shell />
-        </BrowserRouter>
-      </HistoryProvider>
-    </AppProvider>
+    <HistoryProvider>
+      <BrowserRouter>
+        <RouteTracker />
+        <Shell />
+      </BrowserRouter>
+    </HistoryProvider>
   );
 }
 
