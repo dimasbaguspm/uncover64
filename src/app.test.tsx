@@ -97,8 +97,6 @@ describe("App", () => {
   it("redirects unknown routes to home", async () => {
     window.history.pushState({}, "", "/unknown");
     await renderApp();
-    expect(
-      await screen.findByText("Drop a file to encode it as base64"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Drop a file to encode it as base64")).toBeInTheDocument();
   });
 });

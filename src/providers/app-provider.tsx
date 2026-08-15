@@ -1,5 +1,4 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { initUmami } from "../lib/analytics/umami";
 import { trackEvent } from "../lib/analytics/track";
 import { ANALYTICS } from "../constants/analytics";
 import { initWorker } from "../lib/worker-client";
@@ -19,7 +18,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let mounted = true;
     void tryCatch(
       async () => {
-        initUmami();
         if (ANALYTICS.otelUrl) {
           await tryCatch(() => import("../lib/analytics/faro").then(({ initFaro }) => initFaro()));
         }
