@@ -4,18 +4,12 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
-const monaco = (p: string) =>
-  fileURLToPath(new URL(`./node_modules/monaco-editor/${p}`, import.meta.url));
-
 // https://vite.dev/config/
 export default defineConfig({
   resolve: {
     alias: {
-      // monaco-editor's exports map double-prefixes scoped esm subpaths; alias them directly.
-      "monaco-editor/esm/vs/editor/editor.api": monaco("esm/vs/editor/editor.api.js"),
-      "monaco-editor/esm/vs/language/json/monaco.contribution": monaco(
-        "esm/vs/language/json/monaco.contribution.js",
-      ),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@locales": fileURLToPath(new URL("./locales", import.meta.url)),
     },
   },
   plugins: [
