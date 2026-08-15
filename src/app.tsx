@@ -23,7 +23,6 @@ import { ROUTES } from "@/constants/routes";
 import { useGithubStars } from "@/hooks/use-github-stars";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useTheme } from "@/hooks/use-theme";
-import "@/i18n";
 import { LANGUAGES, setLocale } from "@/i18n";
 import { trackEvent } from "@/lib/analytics/track";
 import { logInfo, currentTrace } from "@/lib/analytics/otel";
