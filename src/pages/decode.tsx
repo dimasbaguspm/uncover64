@@ -1,9 +1,10 @@
 import { ClipboardPaste } from "lucide-react";
-import { useEffect, useRef, useState, type ClipboardEvent } from "react";
+import { type ClipboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import type { DecodeResult, DecompressOption } from "@/lib/types";
+import type { DecompressOption } from "@/lib/types";
 import { DECOMPRESS_OPTIONS } from "@/constants/compression";
 import { useEncoder } from "@/hooks/use-encoder";
+import { useDecode } from "@/hooks/use-decode";
 import { SplitPane } from "@/components/split-pane";
 import { PreviewPanel } from "@/components/preview-panel";
 import { ErrorBanner, Shimmer } from "@/components/ui";
@@ -17,35 +18,8 @@ function optionLabel(id: DecompressOption, t: (key: string) => string): string {
 
 export default function DecodePage() {
   const { t } = useTranslation();
-  const [input, setInput] = useState("");
-  const [decompress, setDecompress] = useState<DecompressOption>("auto");
-  const [result, setResult] = useState<DecodeResult | null>(null);
-  const [pending, setPending] = useState(false);
-  const { decode, error } = useEncoder();
-
-  const decodeRef = useRef(decode);
-  decodeRef.current = decode;
-
-  useEffect(() => {
-    const value = input.trim();
-    if (!value) {
-      setResult(null);
-      setPending(false);
-      return;
-    }
-    setPending(true);
-    let cancelled = false;
-    const id = setTimeout(async () => {
-      const res = await decodeRef.current(value, decompress);
-      if (cancelled) return;
-      setPending(false);
-      if (res) setResult(res);
-    }, 350);
-    return () => {
-      cancelled = true;
-      clearTimeout(id);
-    };
-  }, [input, decompress]);
+  const { error } = useEncoder();
+  const { input, setInput, decompress, setDecompress, result, pending } = useDecode();
 
   const paste = async () => {
     await tryCatch(
