@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { compressBytes, opDecode, opDownscale, opEncodeAll } from "./ops";
+import { compressBytes, opDecode, opDownscale } from "./ops";
 import { QUALITY_ORIGINAL } from "@/constants/compression";
 import { bytesToBase64, bytesToBase64Url, utf8Encode } from "@/lib/base64";
 
@@ -14,71 +14,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("opEncodeAll", () => {
-  it("encodes raw text and roundtrips through decode", async () => {
-    const res = await opEncodeAll(utf8Encode("hello uncover64"));
-    expect(res.base64).toBe(Buffer.from("hello uncover64").toString("base64"));
-    const decoded = await opDecode(res.base64);
-    expect(decoded.text).toBe("hello uncover64");
-    expect(decoded.info.kind).toBe("text");
-  });
-
-  it("returns gzip/deflate/brotli variations with sizes", async () => {
-    const big = "x".repeat(10_000);
-    const res = await opEncodeAll(utf8Encode(big));
-    const algorithms = res.variations.map((v) => v.algorithm);
-    expect(algorithms).toContain("gzip");
-    expect(algorithms).toContain("deflate");
-    expect(algorithms).toContain("brotli");
-    for (const v of res.variations) {
-      expect(v.byteLength).toBeLessThanOrEqual(res.rawSizeBytes);
-      expect(v.base64).toMatch(/^[A-Za-z0-9+/]+=*$/);
-      expect(v.base64Length).toBe(v.base64.length);
-    }
-  });
-
-  it("roundtrips deflate-raw variation", async () => {
-    const res = await opEncodeAll(utf8Encode("deflate-raw roundtrip"));
-    const deflateRaw = res.variations.find((v) => v.algorithm === "deflate-raw")!;
-    expect(deflateRaw).toBeDefined();
-    const decoded = await opDecode(deflateRaw.base64, "deflate-raw");
-    expect(decoded.text).toBe("deflate-raw roundtrip");
-  });
-
-  it("produces quality tiers 10..90 per algorithm with a large spread", async () => {
-    const res = await opEncodeAll(utf8Encode("quality tiers ".repeat(500)));
-    const byAlgo = new Map<string, number[]>();
-    for (const v of res.variations) {
-      if (v.algorithm === "lz") continue; // lz-string has no quality tiers
-      const arr = byAlgo.get(v.algorithm) ?? [];
-      arr.push(v.quality);
-      byAlgo.set(v.algorithm, arr);
-    }
-    for (const qualities of byAlgo.values()) {
-      expect([...qualities].sort((a, b) => a - b)).toEqual([
-        10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
-      ]);
-    }
-    const gzip = res.variations
-      .filter((v) => v.algorithm === "gzip")
-      .sort((a, b) => a.quality - b.quality);
-    // lower quality = more aggressive = smaller; sizes grow with quality
-    for (let i = 1; i < gzip.length; i++) {
-      expect(gzip[i].byteLength).toBeGreaterThanOrEqual(gzip[i - 1].byteLength);
-    }
-    // the most aggressive tier is clearly smaller than the original
-    expect(gzip[0].byteLength).toBeLessThan(res.rawSizeBytes);
-  });
-
-  it("adds a single lz-string variation that roundtrips", async () => {
-    const text = "lz roundtrip ".repeat(100);
-    const res = await opEncodeAll(utf8Encode(text));
-    const lz = res.variations.find((v) => v.algorithm === "lz");
-    expect(lz).toBeDefined();
-    const decoded = await opDecode(lz!.base64, "lz");
-    expect(decoded.text).toBe(text);
-  });
-
+describe("compressBytes", () => {
   it("compresses with lz regardless of the quality value", async () => {
     const text = "lz quality ".repeat(200);
     const raw = utf8Encode(text);
@@ -87,70 +23,15 @@ describe("opEncodeAll", () => {
     const decoded = await opDecode(bytesToBase64(compressed), "lz");
     expect(decoded.text).toBe(text);
   });
+});
 
-  it("roundtrips gzip variation with auto decompression", async () => {
-    const res = await opEncodeAll(utf8Encode("compressed roundtrip"));
-    const gzip = res.variations.find((v) => v.algorithm === "gzip")!;
-    const decoded = await opDecode(gzip.base64, "auto");
-    expect(decoded.decompressed).toBe("gzip");
-    expect(decoded.text).toBe("compressed roundtrip");
-  });
-
-  it.each(["deflate", "deflate-raw", "brotli"] as const)(
-    "auto-detects and decompresses %s",
-    async (algo) => {
-      const text = `${algo} auto detect `.repeat(100);
-      const res = await opEncodeAll(utf8Encode(text));
-      const v = res.variations.find((x) => x.algorithm === algo && x.quality === 50)!;
-      expect(v.byteLength).toBeLessThan(res.rawSizeBytes);
-      const decoded = await opDecode(v.base64, "auto");
-      expect(decoded.decompressed).toBe(algo);
-      expect(decoded.text).toBe(text);
-    },
-  );
-
-  it("auto-detects and decompresses lz-string", async () => {
-    const text = "lz auto detect ".repeat(100);
-    const res = await opEncodeAll(utf8Encode(text));
-    const lz = res.variations.find((v) => v.algorithm === "lz")!;
-    const decoded = await opDecode(lz.base64, "auto");
-    expect(decoded.decompressed).toBe("lz");
-    expect(decoded.text).toBe(text);
-  });
-
+describe("opDecode", () => {
   it("leaves plain text untouched under auto detection", async () => {
     const decoded = await opDecode(bytesToBase64(utf8Encode('{"hello":"world"}')), "auto");
     expect(decoded.decompressed).toBeUndefined();
     expect(decoded.info.kind).toBe("json");
   });
 
-  it("keeps payload compressed when decompress is off", async () => {
-    const res = await opEncodeAll(utf8Encode("stay compressed"));
-    const gzip = res.variations.find((v) => v.algorithm === "gzip")!;
-    const decoded = await opDecode(gzip.base64, null);
-    expect(decoded.info.kind).toBe("gzip");
-    expect(decoded.decompressed).toBeUndefined();
-  });
-
-  it("supports brotli roundtrip", async () => {
-    const res = await opEncodeAll(utf8Encode("brotli roundtrip"));
-    const brotli = res.variations.find((v) => v.algorithm === "brotli")!;
-    const decoded = await opDecode(brotli.base64, "brotli");
-    expect(decoded.text).toBe("brotli roundtrip");
-  });
-
-  it("encodes binary bytes and detects them", async () => {
-    const png = new Uint8Array([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0, 0, 0, 0, 0,
-    ]);
-    const res = await opEncodeAll(png);
-    expect(res.mime).toBe("image/png");
-    const decoded = await opDecode(res.base64);
-    expect(decoded.info.kind).toBe("png");
-  });
-});
-
-describe("opDecode", () => {
   it("rejects invalid base64", async () => {
     await expect(opDecode("!!!not base64!!!")).rejects.toThrow();
   });

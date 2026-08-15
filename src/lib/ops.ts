@@ -10,7 +10,7 @@ import type {
   JwtParts,
   Variation,
 } from "./types";
-import { COMPRESSION_QUALITIES, QUALITY_ORIGINAL } from "@/constants/compression";
+import { QUALITY_ORIGINAL } from "@/constants/compression";
 import * as pako from "pako";
 import * as LZString from "lz-string";
 import {
@@ -188,62 +188,6 @@ async function autoDetectCompression(
     if (out) return { algo, bytes: out };
   }
   return null;
-}
-
-const ALL_ALGOS: CompressFormat[] = ["gzip", "deflate", "deflate-raw", "brotli"];
-
-export async function opEncodeAll(bytes: Uint8Array): Promise<EncodeAllResult> {
-  const t0 = performance.now();
-  const info = detect(bytes);
-  const base64 = bytesToBase64(bytes);
-  const results = await Promise.all(
-    ALL_ALGOS.flatMap((algorithm) =>
-      COMPRESSION_QUALITIES.map((quality) =>
-        tryCatch<Variation>(
-          async () => {
-            const t0 = performance.now();
-            const compressed = await compressBytes(bytes, algorithm, quality);
-            const encoded = bytesToBase64(compressed);
-            return {
-              algorithm,
-              quality,
-              byteLength: compressed.byteLength,
-              base64Length: encoded.length,
-              base64: encoded,
-              ms: performance.now() - t0,
-            };
-          },
-          { log: false },
-        ),
-      ),
-    ),
-  );
-  const variations = results.filter((v): v is Variation => v !== null);
-  await tryCatch(
-    async () => {
-      const t0 = performance.now();
-      const lz = await compressBytes(bytes, "lz");
-      const lzEncoded = bytesToBase64(lz);
-      variations.push({
-        algorithm: "lz",
-        quality: QUALITY_ORIGINAL,
-        byteLength: lz.byteLength,
-        base64Length: lzEncoded.length,
-        base64: lzEncoded,
-        ms: performance.now() - t0,
-      });
-    },
-    { log: false },
-  );
-  return {
-    base64,
-    mime: info.mime,
-    kind: info.kind,
-    rawSizeBytes: bytes.byteLength,
-    rawBase64Length: base64.length,
-    variations,
-    ms: performance.now() - t0,
-  };
 }
 
 export async function opEncodeSelected(
