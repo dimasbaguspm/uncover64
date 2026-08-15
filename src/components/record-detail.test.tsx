@@ -17,8 +17,8 @@ function fixture(): CompressionRecord {
     rawBase64Length: 1360,
     rawText: "",
     variations: [
-      { algorithm: "gzip", quality: 70, byteLength: 400, base64Length: 544, ms: 5 },
-      { algorithm: "gzip", quality: 30, byteLength: 200, base64Length: 272, ms: 3 },
+      { algorithm: "gzip", quality: 70, byteLength: 200, base64Length: 272, ms: 5 },
+      { algorithm: "gzip", quality: 30, byteLength: 500, base64Length: 680, ms: 3 },
     ],
     createdAt: 1780000000000,
   };
@@ -52,15 +52,15 @@ describe("RecordDetail", () => {
   it("renders rows sorted by size ascending by default", () => {
     renderDetail();
     const buttons = screen.getAllByRole("button").slice(1);
-    expect(buttons[0]).toHaveTextContent("Gzip · 30%");
-    expect(buttons[1]).toHaveTextContent("Gzip · 70%");
+    expect(buttons[0]).toHaveTextContent("Gzip · 70%");
+    expect(buttons[1]).toHaveTextContent("Gzip · 30%");
     expect(buttons[2]).toHaveTextContent("Original");
   });
 
   it("marks the smallest compressed variation as recommended", () => {
     renderDetail();
-    const recommended = screen.getByText("★ Recommended");
-    expect(recommended.closest("button")).toHaveTextContent("Gzip · 30%");
+    const recommended = screen.getByText(/Recommended/);
+    expect(recommended.closest("button")).toHaveTextContent("Gzip · 70%");
   });
 
   it("sorts by quality when requested", () => {
@@ -84,7 +84,7 @@ describe("RecordDetail", () => {
 
   it("fires onSelect with the clicked variation id", () => {
     const { onSelect } = renderDetail();
-    fireEvent.click(screen.getByText("Gzip · 30% (70% reduced)"));
-    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: "gzip:30" }));
+    fireEvent.click(screen.getByText("Gzip · 70% (30% reduced)"));
+    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: "gzip:70" }));
   });
 });
