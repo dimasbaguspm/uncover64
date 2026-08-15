@@ -1,11 +1,11 @@
-import { Bookmark, MessageSquareText, Moon, MoreVertical, Sun } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { DropdownMenu } from "@/components/dropdown-menu";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { FEEDBACK_URL } from "@/constants/misc";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useTheme } from "@/hooks/use-theme";
 import { trackEvent } from "@/lib/analytics/track";
+import { Bookmark, MessageSquareText, Moon, MoreVertical, Sun } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function Footer() {
   const { t } = useTranslation();
@@ -31,13 +31,13 @@ export function Footer() {
         </div>
 
         <a
-          href="https://uncover64.dimasbaguspm.com"
+          href="https://uncover64.dimasbaguspm.dev"
           target="_blank"
           rel="noreferrer"
-          onClick={() => trackEvent("footer_link", { url: "https://uncover64.dimasbaguspm.com" })}
+          onClick={() => trackEvent("footer_link", { url: "https://uncover64.dimasbaguspm.dev" })}
           className="flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-dim transition-colors hover:bg-surface-2 hover:text-ink"
         >
-          <span className="hidden sm:inline">uncover64.dimasbaguspm.com</span>
+          <span className="hidden sm:inline">uncover64.dimasbaguspm.dev</span>
           <span className="sm:hidden">uncover64</span>
         </a>
 

@@ -1,9 +1,9 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
 import i18n from "@/i18n";
 import { trackEvent } from "@/lib/analytics/track";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Footer } from "./footer";
 
 vi.mock("@/lib/analytics/track", () => ({ trackEvent: vi.fn() }));
@@ -96,11 +96,11 @@ describe("Footer", () => {
     renderFooter();
 
     const link = screen.getByRole("link", { name: /uncover64/ });
-    expect(link).toHaveAttribute("href", "https://uncover64.dimasbaguspm.com");
+    expect(link).toHaveAttribute("href", "https://uncover64.dimasbaguspm.dev");
 
     await user.click(link);
     expect(trackEvent).toHaveBeenCalledWith("footer_link", {
-      url: "https://uncover64.dimasbaguspm.com",
+      url: "https://uncover64.dimasbaguspm.dev",
     });
   });
 
