@@ -33,9 +33,8 @@ export default function DecodePage() {
   };
 
   return (
-    <SplitPane
-      storageKey="decode-split"
-      left={
+    <SplitPane storageKey="decode-split">
+      <SplitPane.Left>
         <div className="flex h-full flex-col">
           <div className="flex items-center gap-2 border-b border-edge px-3 py-1.5">
             <DecompressSelect value={decompress} onChange={setDecompress} />
@@ -57,8 +56,8 @@ export default function DecodePage() {
             className="min-h-0 w-full flex-1 resize-none border-0 bg-well p-3 text-sm text-ink placeholder-faint font-mono focus:outline-none"
           />
         </div>
-      }
-      right={
+      </SplitPane.Left>
+      <SplitPane.Right>
         <div className="flex h-full flex-col overflow-hidden">
           <div className="px-3 pt-2">
             <ErrorBanner message={error ?? ""} />
@@ -85,7 +84,7 @@ export default function DecodePage() {
             <div className="p-3 text-sm text-faint">{t("decode.liveHint")}</div>
           )}
         </div>
-      }
-    />
+      </SplitPane.Right>
+    </SplitPane>
   );
 }

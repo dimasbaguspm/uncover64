@@ -124,9 +124,8 @@ export default function AssetPage() {
         </div>
       </div>
 
-      <SplitPane
-        storageKey="asset-split"
-        left={
+      <SplitPane storageKey="asset-split">
+        <SplitPane.Left>
           <div className="flex h-full min-h-0 flex-col overflow-y-auto">
             <div className="flex flex-col gap-5 p-4">
               <div className="flex items-center justify-between">
@@ -220,9 +219,7 @@ export default function AssetPage() {
                       <CompressionHistoryRow
                         key={comp.uuid}
                         compression={comp}
-                        onClick={() =>
-                          navigate(`/encode/${asset.uuid}/compress/${comp.uuid}`)
-                        }
+                        onClick={() => navigate(`/encode/${asset.uuid}/compress/${comp.uuid}`)}
                       />
                     ))}
                   </div>
@@ -230,8 +227,8 @@ export default function AssetPage() {
               )}
             </div>
           </div>
-        }
-        right={
+        </SplitPane.Left>
+        <SplitPane.Right>
           <div className="flex h-full min-h-0 flex-col">
             <PaneHeader title={t("record.preview")} />
             <div className="min-h-0 flex-1">
@@ -244,8 +241,8 @@ export default function AssetPage() {
               )}
             </div>
           </div>
-        }
-      />
+        </SplitPane.Right>
+      </SplitPane>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { useCallback, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Children, useCallback, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 function loadRatio(storageKey: string): number | null {
@@ -21,21 +21,28 @@ function saveRatio(storageKey: string, v: number) {
   }
 }
 
+function Left({ children }: { children: ReactNode }) {
+  return children;
+}
+
+function Right({ children }: { children: ReactNode }) {
+  return children;
+}
+
 export function SplitPane({
-  left,
-  right,
+  children,
   initialRatio = 0.6,
   minRatio = 0.25,
   maxRatio = 0.85,
   storageKey,
 }: {
-  left: ReactNode;
-  right: ReactNode;
+  children: ReactNode;
   initialRatio?: number;
   minRatio?: number;
   maxRatio?: number;
   storageKey?: string;
 }) {
+  const [left, right] = Children.toArray(children);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const containerRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
@@ -146,3 +153,6 @@ export function SplitPane({
     </div>
   );
 }
+
+SplitPane.Left = Left;
+SplitPane.Right = Right;

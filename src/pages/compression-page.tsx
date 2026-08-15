@@ -27,10 +27,7 @@ function CompressionWorkspace({
   const [selectedId, setSelectedId] = useState("raw");
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
-  const variations = useMemo(
-    () => recordVariations(compression, t),
-    [compression, t],
-  );
+  const variations = useMemo(() => recordVariations(compression, t), [compression, t]);
 
   const { preview, previewLoading, exportBase64, base64Loading } = usePreview({
     compression,
@@ -47,7 +44,10 @@ function CompressionWorkspace({
   const selectedVariation = variations.find((v) => v.id === selectedId);
 
   const bestId = useMemo(() => {
-    const best = sort(variations.filter((v) => v.algorithm), (v) => v.byteLength)[0];
+    const best = sort(
+      variations.filter((v) => v.algorithm),
+      (v) => v.byteLength,
+    )[0];
     return best?.id ?? null;
   }, [variations]);
 
@@ -95,9 +95,8 @@ function CompressionWorkspace({
           </div>
         </div>
 
-        <SplitPane
-          storageKey="compression-split"
-          left={
+        <SplitPane storageKey="compression-split">
+          <SplitPane.Left>
             <RecordDetail
               record={compression}
               selectedId={selectedId}
@@ -105,8 +104,8 @@ function CompressionWorkspace({
               base64={exportBase64}
               base64Loading={base64Loading}
             />
-          }
-          right={
+          </SplitPane.Left>
+          <SplitPane.Right>
             <div className="flex h-full min-h-0 flex-col">
               <PaneHeader title={t("record.preview")} />
               {preview ? (
@@ -135,8 +134,8 @@ function CompressionWorkspace({
                 </div>
               )}
             </div>
-          }
-        />
+          </SplitPane.Right>
+        </SplitPane>
       </div>
 
       {viewerIndex !== null && preview && variations[viewerIndex] && (

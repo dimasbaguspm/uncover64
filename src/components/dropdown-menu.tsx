@@ -1,6 +1,8 @@
 import { clsx } from "clsx";
 import { ChevronRight } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+
+const MenuContext = createContext<{ close: () => void }>({ close: () => {} });
 
 export function DropdownMenu({
   trigger,
@@ -47,28 +49,34 @@ export function DropdownMenu({
         {trigger}
       </button>
       {open && (
-        <div
-          role="menu"
-          className={clsx(
-            "absolute z-40 min-w-40 rounded-lg border border-edge bg-surface p-1 shadow-[var(--shadow)]",
-            side === "top" ? "bottom-full mb-1" : "top-full mt-1",
-            align === "end" ? "right-0" : "left-0",
-          )}
-          onClick={() => setOpen(false)}
-        >
-          {children}
-        </div>
+        <MenuContext.Provider value={{ close: () => setOpen(false) }}>
+          <div
+            role="menu"
+            className={clsx(
+              "absolute z-40 min-w-40 rounded-lg border border-edge bg-surface p-1 shadow-[var(--shadow)]",
+              side === "top" ? "bottom-full mb-1" : "top-full mt-1",
+              align === "end" ? "right-0" : "left-0",
+            )}
+            onClick={() => setOpen(false)}
+          >
+            {children}
+          </div>
+        </MenuContext.Provider>
       )}
     </div>
   );
 }
 
 export function MenuItem({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+  const { close } = useContext(MenuContext);
   return (
     <button
       type="button"
       role="menuitem"
-      onClick={onClick}
+      onClick={() => {
+        onClick();
+        close();
+      }}
       className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-ink transition-colors hover:bg-surface-2"
     >
       {children}
