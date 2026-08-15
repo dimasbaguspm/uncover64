@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useHistory } from "../providers/history-provider";
 import { useWorker } from "../providers/worker-provider";
+import { trackEvent } from "../lib/analytics/track";
 import { formatBytes } from "../lib/utils/format";
 import { SplitPane } from "../components/split-pane";
 import { PaneHeader } from "../components/pane-header";
@@ -107,18 +108,25 @@ export default function CompressionPage() {
 
   const handleOpenFullscreen = useCallback(() => {
     const idx = variations.findIndex((v) => v.id === selectedId);
+    trackEvent("fullscreen_open", { label: variations[idx]?.label ?? "" });
     setViewerIndex(idx >= 0 ? idx : 0);
   }, [variations, selectedId]);
 
   const handleNav = useCallback(
     (delta: number) => {
       if (viewerIndex === null) return;
+      trackEvent("fullscreen_nav", { direction: delta > 0 ? "next" : "prev" });
       const next = (viewerIndex + delta + variations.length) % variations.length;
       setViewerIndex(next);
       setSelectedId(variations[next].id);
     },
     [viewerIndex, variations],
   );
+
+  const handleCloseFullscreen = useCallback(() => {
+    trackEvent("fullscreen_close");
+    setViewerIndex(null);
+  }, []);
 
   if (!ready) {
     return (
@@ -214,7 +222,7 @@ export default function CompressionPage() {
           recommended={variations[viewerIndex].id === bestId}
           loading={previewLoading}
           onNav={handleNav}
-          onClose={() => setViewerIndex(null)}
+          onClose={handleCloseFullscreen}
         >
           <PreviewPanel {...preview} bare />
         </FullscreenViewer>

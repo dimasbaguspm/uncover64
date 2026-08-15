@@ -55,6 +55,7 @@ function NavLinks() {
             key={r.path}
             to={r.path}
             end={r.path === "/"}
+            onClick={() => trackEvent("nav_click", { tab: r.key })}
             className={clsx(
               "rounded px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-colors",
               active ? "bg-surface-2 text-accent" : "text-dim hover:bg-surface-2/60 hover:text-ink",
@@ -85,29 +86,15 @@ function Shell() {
   const version = import.meta.env.VITE_APP_VERSION;
   const stars = useGithubStars();
 
-  // Product events → analytics provider (via the trackEvent abstraction).
+  // Clipboard paste events → analytics provider.
   useEffect(() => {
-    let lastClick = 0;
-    const onClick = (e: MouseEvent) => {
-      const now = Date.now();
-      if (now - lastClick < 500) return;
-      lastClick = now;
-      const el = (e.target as HTMLElement | null)?.closest?.("button, a") as HTMLElement | null;
-      if (!el) return;
-      trackEvent("click", {
-        tag: el.tagName.toLowerCase(),
-        text: (el.textContent ?? "").trim().slice(0, 60),
-      });
-    };
     const onPaste = (e: ClipboardEvent) => {
       trackEvent("paste", {
         length: (e.clipboardData?.getData("text") ?? "").length,
       });
     };
-    window.addEventListener("click", onClick);
     document.addEventListener("paste", onPaste);
     return () => {
-      window.removeEventListener("click", onClick);
       document.removeEventListener("paste", onPaste);
     };
   }, []);
@@ -126,6 +113,7 @@ function Shell() {
                 rel="noreferrer"
                 aria-label={t("menu.github")}
                 title={t("menu.github")}
+                onClick={() => trackEvent("nav_github")}
                 className="flex items-center gap-1.5 rounded-full border border-edge bg-surface-2/50 px-2 py-1 text-dim transition-colors hover:border-edge-strong hover:bg-surface-2 hover:text-ink"
               >
                 <GithubIcon size={14} />
@@ -206,7 +194,10 @@ function Shell() {
             <div className="flex items-center justify-start gap-0.5">
               <button
                 type="button"
-                onClick={() => setDrawer("history")}
+                onClick={() => {
+                  trackEvent("history_open");
+                  setDrawer("history");
+                }}
                 aria-label={t("history.title")}
                 title={t("history.title")}
                 className="rounded p-1.5 text-dim transition-colors hover:bg-surface-2 hover:text-ink"
@@ -219,6 +210,9 @@ function Shell() {
               href="https://uncover64.dimasbaguspm.com"
               target="_blank"
               rel="noreferrer"
+              onClick={() =>
+                trackEvent("footer_link", { url: "https://uncover64.dimasbaguspm.com" })
+              }
               className="flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-dim transition-colors hover:bg-surface-2 hover:text-ink"
             >
               <span className="hidden sm:inline">uncover64.dimasbaguspm.com</span>
@@ -228,7 +222,10 @@ function Shell() {
             <div className="flex items-center justify-end gap-1 sm:gap-3">
               <button
                 type="button"
-                onClick={toggle}
+                onClick={() => {
+                  trackEvent("theme_toggle", { theme: theme === "dark" ? "light" : "dark" });
+                  toggle();
+                }}
                 aria-label={t("footer.theme")}
                 title={t("footer.theme")}
                 className="rounded p-1.5 text-dim transition-colors hover:bg-surface-2 hover:text-ink"
@@ -244,7 +241,10 @@ function Shell() {
                 <Globe className="size-4 text-dim" aria-hidden />
                 <select
                   value={i18n.language}
-                  onChange={(e) => setLocale(e.target.value)}
+                  onChange={(e) => {
+                    trackEvent("language_select", { code: e.target.value });
+                    setLocale(e.target.value);
+                  }}
                   aria-label={t("footer.language")}
                   className="bg-transparent text-xs font-medium text-ink focus:outline-none"
                 >
@@ -277,7 +277,10 @@ function Shell() {
                         key={l.code}
                         type="button"
                         role="menuitem"
-                        onClick={() => setLocale(l.code)}
+                        onClick={() => {
+                          trackEvent("language_select", { code: l.code });
+                          setLocale(l.code);
+                        }}
                         className={clsx(
                           "flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors",
                           i18n.language === l.code ? "text-accent" : "text-ink hover:bg-surface-2",

@@ -9,6 +9,7 @@ import type { CompressionRecord } from "../lib/db";
 import type { CompressFormat } from "../lib/types";
 import { formatBytes, savingsPercent } from "../lib/utils/format";
 import { variationKey } from "../lib/variation";
+import { trackEvent } from "../lib/analytics/track";
 import { CopyButton, Spinner } from "./ui";
 
 export interface VariationOption {
@@ -153,7 +154,10 @@ export const RecordDetail = memo(function RecordDetail({
               <button
                 key={row.id}
                 type="button"
-                onClick={() => onSelect(row)}
+                onClick={() => {
+                  trackEvent("compression_select", { id: row.id, label: row.label });
+                  onSelect(row);
+                }}
                 className={clsx(
                   "flex w-full flex-col rounded border px-3 py-3 text-left transition-colors",
                   selected

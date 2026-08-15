@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { logDebug, logWarn } from "../lib/analytics/otel";
 
 const CACHE_KEY = "uncover64:github-stars";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -33,10 +34,16 @@ function fetchStars(): Promise<number | null> {
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((json) => {
         const n = typeof json?.stargazers_count === "number" ? json.stargazers_count : null;
-        if (n !== null) saveCache(n);
+        if (n !== null) {
+          saveCache(n);
+          logDebug("github stars fetched", { stars: n });
+        }
         return n;
       })
-      .catch(() => null)
+      .catch(() => {
+        logWarn("github stars fetch failed");
+        return null;
+      })
       .finally(() => {
         inFlight = null;
       });

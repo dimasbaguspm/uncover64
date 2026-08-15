@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { logInfo } from "../lib/analytics/otel";
 
 export type Theme = "dark" | "light";
 
@@ -29,7 +30,13 @@ export function useTheme() {
     }
   }, [theme]);
 
-  const toggle = useCallback(() => setTheme((t) => (t === "dark" ? "light" : "dark")), []);
+  const toggle = useCallback(() => {
+    setTheme((t) => {
+      const next: Theme = t === "dark" ? "light" : "dark";
+      logInfo("theme toggle", { theme: next });
+      return next;
+    });
+  }, []);
 
   return { theme, toggle };
 }

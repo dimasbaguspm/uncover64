@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { trackEvent } from "../lib/analytics/track";
+import { logInfo } from "../lib/analytics/otel";
 import { ANALYTICS } from "../constants/analytics";
 import { initWorker } from "../lib/worker-client";
 import { tryCatch } from "../lib/utils/try-catch";
@@ -32,6 +33,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         onFinished: () => {
           if (mounted) {
             trackEvent("page_loaded");
+            logInfo("app booted", { version: import.meta.env.VITE_APP_VERSION ?? "" });
             setReady(true);
           }
         },

@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable, type Table } from "dexie";
 import type { CompressFormat } from "./types";
+import { logDebug } from "./analytics/otel";
 
 export interface HistoryVariation {
   algorithm: CompressFormat;
@@ -65,6 +66,9 @@ class UncoverDB extends Dexie {
 let _db: UncoverDB | null = null;
 
 export function getDb(): UncoverDB {
-  if (!_db) _db = new UncoverDB();
+  if (!_db) {
+    _db = new UncoverDB();
+    logDebug("indexeddb opened", { name: "uncover64" });
+  }
   return _db;
 }

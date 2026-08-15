@@ -1,5 +1,6 @@
 import type { ExportFormat } from "./types";
 import { ENV_LINE_WIDTH } from "../constants/formats";
+import { logInfo } from "./analytics/otel";
 
 export function toDataUri(base64: string, mime: string): string {
   return `data:${mime};base64,${base64}`;
@@ -35,6 +36,7 @@ export function exportValue(
   secretName: string,
   key: string,
 ): string {
+  logInfo("export", { format, length: base64.length, mime });
   switch (format) {
     case "datauri":
       return toDataUri(base64, mime);

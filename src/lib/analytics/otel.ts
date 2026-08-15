@@ -1,3 +1,4 @@
+import { trace } from "@opentelemetry/api";
 import { ANALYTICS } from "../../constants/analytics";
 
 const SEVERITY: Record<string, number> = {
@@ -19,9 +20,27 @@ function valueOf(v: unknown): AttrValue {
   return { stringValue: String(v ?? "") };
 }
 
+function isValidId(id: string | undefined, len: number): id is string {
+  return typeof id === "string" && id.length === len && /^[0-9a-f]+$/i.test(id);
+}
+
+/** Current trace/span ids so logs correlate with the active span. */
+function traceContext(): Record<string, string> {
+  try {
+    const sc = trace.getActiveSpan()?.spanContext();
+    if (sc && isValidId(sc.traceId, 32) && isValidId(sc.spanId, 16)) {
+      return { traceId: sc.traceId, spanId: sc.spanId };
+    }
+  } catch {
+    /* tracing not initialized */
+  }
+  return {};
+}
+
 /** Rich, always-on context attached to every log. */
 function context(props?: Record<string, unknown>): Record<string, unknown> {
   return {
+    ...traceContext(),
     browser: typeof navigator !== "undefined" ? navigator.userAgent : "",
     version: import.meta.env.VITE_APP_VERSION ?? "",
     environment: import.meta.env.MODE,
@@ -30,6 +49,9 @@ function context(props?: Record<string, unknown>): Record<string, unknown> {
     ...props,
   };
 }
+
+const TIMEOUT_MS = 10_000;
+const RETRY_DELAY_MS = 500;
 
 async function postOtlpLog(
   level: string,
@@ -68,15 +90,31 @@ async function postOtlpLog(
       },
     ],
   };
-  try {
-    await fetch(`${base}/v1/logs`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-  } catch {
-    /* telemetry is best-effort */
-  }
+
+  // Let fetch derive Content-Length; an explicit/mismatched value (or
+  // Transfer-Encoding: chunked) makes the edge/collector reject with 400.
+  const send = async (): Promise<boolean> => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+    try {
+      const res = await fetch(`${base}/v1/logs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  // One retry for transient failures (network blips, 5xx).
+  if (await send()) return;
+  await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+  await send();
 }
 
 /**
@@ -94,4 +132,19 @@ export async function logError(
     message,
     context({ errorName: e.name, errorMessage: e.message, stack: e.stack ?? "", ...attrs }),
   );
+}
+
+/** Log a warning to OTEL with the active trace/span ids. */
+export function logWarn(message: string, attrs?: Record<string, unknown>): void {
+  void postOtlpLog("warn", message, context(attrs));
+}
+
+/** Log an informational message to OTEL with the active trace/span ids. */
+export function logInfo(message: string, attrs?: Record<string, unknown>): void {
+  void postOtlpLog("info", message, context(attrs));
+}
+
+/** Log a debug message to OTEL with the active trace/span ids. */
+export function logDebug(message: string, attrs?: Record<string, unknown>): void {
+  void postOtlpLog("debug", message, context(attrs));
 }

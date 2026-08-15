@@ -1,10 +1,11 @@
 import { FileText, Search, Trash2, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useHistory } from "../providers/history-provider";
 import { detect } from "../lib/base64";
 import { formatBytes } from "../lib/utils/format";
+import { trackEvent } from "../lib/analytics/track";
 import { Badge } from "./ui";
 
 export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -12,6 +13,19 @@ export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () =>
   const navigate = useNavigate();
   const { assets, removeAsset, clear } = useHistory();
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+    const q = query.trim();
+    if (!q) return;
+    const id = setTimeout(() => trackEvent("history_search", { query: q }), 500);
+    return () => clearTimeout(id);
+  }, [query, open]);
+
+  const handleClose = () => {
+    trackEvent("history_close");
+    onClose();
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -25,7 +39,7 @@ export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () =>
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
       <div className="absolute top-0 right-0 flex h-full w-full max-w-sm flex-col border-l border-edge bg-surface shadow-[var(--shadow)]">
         <div className="flex shrink-0 items-center justify-between border-b border-edge bg-surface-2 px-4 py-3">
           <h2 className="text-sm font-semibold tracking-wide text-ink uppercase">
@@ -44,7 +58,7 @@ export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () =>
             )}
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               aria-label={t("changelog.close")}
               className="rounded p-1 text-dim transition-colors hover:bg-surface hover:text-ink"
             >
@@ -78,6 +92,7 @@ export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () =>
                 <button
                   type="button"
                   onClick={() => {
+                    trackEvent("history_open_asset", { name: a.name });
                     navigate(`/encode/${a.uuid}`);
                   }}
                   className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
@@ -95,7 +110,10 @@ export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () =>
                 </button>
                 <button
                   type="button"
-                  onClick={() => a.id !== undefined && void removeAsset(a.id)}
+                  onClick={() => {
+                    trackEvent("history_delete", { name: a.name });
+                    if (a.id !== undefined) void removeAsset(a.id);
+                  }}
                   aria-label={t("history.delete")}
                   className="shrink-0 rounded p-1.5 text-faint opacity-60 transition-opacity hover:bg-[var(--tint-rose-bg)] hover:text-[var(--tint-rose-fg)] group-hover:opacity-100"
                 >

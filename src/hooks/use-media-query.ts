@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { logDebug } from "../lib/analytics/otel";
 
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState<boolean>(() => {
@@ -9,7 +10,10 @@ export function useMediaQuery(query: string): boolean {
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return;
     const mql = window.matchMedia(query);
-    const onChange = () => setMatches(mql.matches);
+    const onChange = () => {
+      setMatches(mql.matches);
+      logDebug("media query change", { query, matches: mql.matches });
+    };
     onChange();
     mql.addEventListener("change", onChange);
     return () => mql.removeEventListener("change", onChange);

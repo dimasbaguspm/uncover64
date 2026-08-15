@@ -24,6 +24,7 @@ import {
 } from "./base64";
 import { detect } from "./base64";
 import { tryCatch } from "./utils/try-catch";
+import { logDebug, logWarn } from "./analytics/otel";
 
 export class CompressionUnavailableError extends Error {}
 
@@ -273,6 +274,12 @@ export async function opEncodeSelected(
     ),
   );
   const variations = results.filter((v): v is Variation => v !== null);
+  logDebug("encodeSelected complete", {
+    algorithm: info.kind,
+    rawBytes: bytes.byteLength,
+    variations: variations.length,
+    ms: Math.round(performance.now() - t0),
+  });
   return {
     base64,
     mime: info.mime,
@@ -353,6 +360,9 @@ export async function opDecode(
         finalBytes = hit.bytes;
         decompressed = hit.algo;
         detected = detect(finalBytes);
+        logDebug("decode auto-detected", { algo: hit.algo });
+      } else {
+        logDebug("decode auto: no compression detected", { kind: detected.kind });
       }
     }
   } else if (decompress) {
@@ -362,6 +372,7 @@ export async function opDecode(
       detected = detect(finalBytes);
     } catch {
       decompressed = undefined;
+      logWarn("decode decompress failed", { algo: decompress });
     }
   }
 

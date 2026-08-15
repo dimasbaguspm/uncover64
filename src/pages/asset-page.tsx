@@ -14,6 +14,7 @@ import {
 import { formatBytes } from "../lib/utils/format";
 import { useHistory } from "../providers/history-provider";
 import { useWorker } from "../providers/worker-provider";
+import { trackEvent } from "../lib/analytics/track";
 import { SplitPane } from "../components/split-pane";
 import { PaneHeader } from "../components/pane-header";
 import { PreviewPanel, type PreviewData } from "../components/preview-panel";
@@ -51,15 +52,26 @@ export default function AssetPage() {
     };
   }, [asset]);
 
-  const toggle = (key: string) =>
+  const toggle = (key: string) => {
+    const checked = !selected.has(key);
+    if (key === LZ_KEY) {
+      trackEvent("encode_toggle", { algo: "lz", checked });
+    } else {
+      const [algo, q] = key.split(":");
+      trackEvent("encode_toggle", { algo, quality: Number(q), checked });
+    }
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
     });
+  };
 
-  const setAll = (all: boolean) => setSelected(all ? new Set(ALL_KEYS) : new Set());
+  const setAll = (all: boolean) => {
+    trackEvent(all ? "encode_select_all" : "encode_select_clear", { count: ALL_KEYS.length });
+    setSelected(all ? new Set(ALL_KEYS) : new Set());
+  };
 
   const proceed = async () => {
     if (!asset || selected.size === 0) return;

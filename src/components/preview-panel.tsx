@@ -4,6 +4,7 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { CompressFormat, FileInfo } from "../lib/types";
 import { formatBytes } from "../lib/utils/format";
+import { trackEvent } from "../lib/analytics/track";
 import { Badge } from "./ui";
 
 export interface PreviewData {
@@ -84,10 +85,12 @@ export const PreviewPanel = memo(function PreviewPanel({
   const zoomOut = () => {
     setFit(false);
     setZoom((z) => Math.max(zoomMin, +(z - zoomStep).toFixed(2)));
+    trackEvent("preview_zoom", { direction: "out" });
   };
   const zoomIn = () => {
     setFit(false);
     setZoom((z) => Math.min(zoomMax, +(z + zoomStep).toFixed(2)));
+    trackEvent("preview_zoom", { direction: "in" });
   };
 
   const iconBtn =

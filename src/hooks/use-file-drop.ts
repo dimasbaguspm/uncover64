@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { logInfo } from "../lib/analytics/otel";
 
 export function useFileDrop(onFile: (file: File) => void) {
   const [isDragging, setIsDragging] = useState(false);
@@ -35,7 +36,10 @@ export function useFileDrop(onFile: (file: File) => void) {
       draggingRef.current = false;
       setIsDragging(false);
       const file = e.dataTransfer?.files?.[0];
-      if (file) handlerRef.current(file);
+      if (file) {
+        logInfo("file dropped", { name: file.name, size: file.size, type: file.type });
+        handlerRef.current(file);
+      }
     };
 
     window.addEventListener("dragenter", onDragEnter);

@@ -9,6 +9,7 @@ import type {
 } from "../lib/types";
 import * as worker from "../lib/worker-client";
 import { trackEvent } from "../lib/analytics/track";
+import { logDebug } from "../lib/analytics/otel";
 import { toErrorMessage } from "../lib/utils/error";
 import { tryCatch } from "../lib/utils/try-catch";
 
@@ -37,14 +38,20 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
 
   const run = useCallback(
     async <T,>(fn: () => Promise<T>, event?: string, message?: string): Promise<T | null> => {
+      const started = performance.now();
       setBusy(true);
       setError(null);
+      const label = message ?? event ?? "worker op";
+      logDebug(`worker ${label} start`);
       return tryCatch(fn, {
         message,
         onSuccess: () => {
           if (event) void trackEvent(event);
+          logDebug(`worker ${label} ok`, { ms: Math.round(performance.now() - started) });
         },
-        onError: (err) => setError(toErrorMessage(err)),
+        onError: (err) => {
+          setError(toErrorMessage(err));
+        },
         onFinished: () => setBusy(false),
       });
     },
