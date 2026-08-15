@@ -104,9 +104,14 @@ async function encodeAllInWorker(bytes: Uint8Array): Promise<EncodeAllResult> {
     ms: performance.now() - t0,
   };
 }
-
 self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
   const req = e.data;
+
+  if ((req as { type?: string }).type === "ping") {
+    (self as DedicatedWorkerGlobalScope).postMessage({ type: "pong" });
+    return;
+  }
+
   const reply = (res: WorkerResponse) => (self as DedicatedWorkerGlobalScope).postMessage(res);
 
   try {

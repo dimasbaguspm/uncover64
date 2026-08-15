@@ -13,9 +13,15 @@ afterEach(async () => {
   await getDb().history.clear();
 });
 
+/** Render the app and wait for the AppProvider splash to clear. */
+async function renderApp() {
+  render(<App />);
+  await screen.findByRole("link", { name: "Encode" });
+}
+
 describe("App", () => {
-  it("renders nav links and header/footer actions", () => {
-    render(<App />);
+  it("renders nav links and header/footer actions", async () => {
+    await renderApp();
     expect(screen.getByRole("link", { name: "Encode" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Decode" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Diff" })).toBeInTheDocument();
@@ -26,13 +32,13 @@ describe("App", () => {
   });
 
   it("shows the upload-first encode landing", async () => {
-    render(<App />);
+    await renderApp();
     expect(screen.getByText("Drop a file to encode it as base64")).toBeInTheDocument();
   });
 
   it("navigates to decode editor and diff page", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    await renderApp();
 
     await user.click(screen.getByRole("link", { name: "Decode" }));
     expect(screen.getByPlaceholderText(/Paste base64, a data URI/i)).toBeInTheDocument();
@@ -44,7 +50,7 @@ describe("App", () => {
 
   it("opens saved history drawer with empty state", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    await renderApp();
 
     await user.click(screen.getByRole("button", { name: "Saved history" }));
     expect(screen.getByText("No saved records yet.")).toBeInTheDocument();
@@ -64,7 +70,7 @@ describe("App", () => {
       variations: [],
     });
     window.history.pushState({}, "", `/encode/${uuid}`);
-    render(<App />);
+    await renderApp();
     expect(await screen.findByText("Variations")).toBeInTheDocument();
   });
 
@@ -82,15 +88,15 @@ describe("App", () => {
       variations: [],
     });
     const user = userEvent.setup();
-    render(<App />);
+    await renderApp();
     await user.click(screen.getByRole("button", { name: "Saved history" }));
     await user.click(screen.getByRole("button", { name: /sample\.txt/ }));
     expect(await screen.findByText("Variations")).toBeInTheDocument();
   });
 
-  it("redirects unknown routes to home", () => {
+  it("redirects unknown routes to home", async () => {
     window.history.pushState({}, "", "/unknown");
-    render(<App />);
+    await renderApp();
     expect(screen.getByText("Drop a file to encode it as base64")).toBeInTheDocument();
   });
 });

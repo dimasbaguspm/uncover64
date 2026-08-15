@@ -9,15 +9,15 @@ import DecodePage from "./pages/decode";
 import DiffPage from "./pages/diff";
 import { WorkerProvider, useWorker } from "./providers/worker-provider";
 import { HistoryProvider } from "./providers/history-provider";
+import { AppProvider } from "./providers/app-provider";
 import { ROUTES } from "./constants/routes";
-import { ANALYTICS } from "./constants/analytics";
 import { CHANGELOG } from "./constants/changelog";
 import { FEEDBACK_URL, GITHUB_URL } from "./constants/misc";
 import "./i18n";
 import { LANGUAGES, setLocale } from "./i18n";
 import { useTheme } from "./hooks/use-theme";
 import { useQueryParam } from "./hooks/use-query-param";
-import { trackUmami, initUmami } from "./lib/analytics/umami";
+import { trackEvent } from "./lib/analytics/track";
 import { Drawer } from "./components/drawer";
 import { ErrorBoundary } from "./components/error-boundary";
 import { HistoryDrawer } from "./components/history-drawer";
@@ -73,7 +73,7 @@ function Shell() {
   const [drawer, setDrawer] = useQueryParam("drawer");
   const version = import.meta.env.VITE_APP_VERSION;
 
-  // Product events → Umami (navigation is auto-tracked by the Umami script).
+  // Product events → analytics provider (via the trackEvent abstraction).
   useEffect(() => {
     let lastClick = 0;
     const onClick = (e: MouseEvent) => {
@@ -82,13 +82,13 @@ function Shell() {
       lastClick = now;
       const el = (e.target as HTMLElement | null)?.closest?.("button, a") as HTMLElement | null;
       if (!el) return;
-      trackUmami("click", {
+      trackEvent("click", {
         tag: el.tagName.toLowerCase(),
         text: (el.textContent ?? "").trim().slice(0, 60),
       });
     };
     const onPaste = (e: ClipboardEvent) => {
-      trackUmami("paste", {
+      trackEvent("paste", {
         length: (e.clipboardData?.getData("text") ?? "").length,
       });
     };
@@ -247,22 +247,17 @@ function Shell() {
 }
 
 export default function App() {
-  useEffect(() => {
-    initUmami();
-    if (ANALYTICS.otelUrl) {
-      void import("./lib/analytics/faro").then(({ initFaro }) => initFaro());
-    }
-  }, []);
-
   return (
-    <WorkerProvider>
-      <HistoryProvider>
-        <BrowserRouter>
-          <RouteErrorReset />
-          <Shell />
-        </BrowserRouter>
-      </HistoryProvider>
-    </WorkerProvider>
+    <AppProvider>
+      <WorkerProvider>
+        <HistoryProvider>
+          <BrowserRouter>
+            <RouteErrorReset />
+            <Shell />
+          </BrowserRouter>
+        </HistoryProvider>
+      </WorkerProvider>
+    </AppProvider>
   );
 }
 

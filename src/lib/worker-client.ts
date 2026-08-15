@@ -37,6 +37,21 @@ function getWorker(): Worker {
   return worker;
 }
 
+/** Create the worker and wait until it is responsive (used at app boot). */
+export function initWorker(): Promise<void> {
+  return new Promise((resolve) => {
+    const w = getWorker();
+    const onMessage = (e: MessageEvent<{ type?: string }>) => {
+      if (e.data?.type === "pong") {
+        w.removeEventListener("message", onMessage);
+        resolve();
+      }
+    };
+    w.addEventListener("message", onMessage);
+    w.postMessage({ type: "ping" });
+  });
+}
+
 function post<R>(req: WorkerRequest, transfer: Transferable[] = []): Promise<R> {
   const id = req.id;
   return new Promise<R>((resolve, reject) => {

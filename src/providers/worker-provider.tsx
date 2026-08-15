@@ -8,6 +8,7 @@ import type {
 } from "../lib/types";
 import * as worker from "../lib/worker-client";
 import { trackEvent } from "../lib/analytics/track";
+import { sendOtlpLog } from "../lib/analytics/otel";
 import { toErrorMessage } from "../lib/utils/error";
 
 interface WorkerContextValue {
@@ -39,7 +40,7 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       const message = toErrorMessage(err);
       setError(message);
-      void trackEvent("error", { message });
+      void sendOtlpLog("error", "error", { message });
       return null;
     } finally {
       setBusy(false);
